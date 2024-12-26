@@ -20,10 +20,12 @@ enum TopicType {
   AVAILABILITY = "availability",
 }
 
-enum StatusMessage {
-  ON = "ON",
-  OFF = "OFF",
-}
+const StatusMessage = {
+  ON: "ON",
+  OFF: "OFF",
+} as const;
+
+type StatusMessage = keyof typeof StatusMessage;
 
 function getTopic(device: Entity, type: TopicType): string {
   return `pc2mqtt/${device.uniqueId}/${type}`;
@@ -37,9 +39,9 @@ async function main() {
     .default("homeassistant")
     .asString();
 
-  const { deviceId, entities }: Config = JSON.parse(
+  const { deviceId, entities } = JSON.parse(
     await fs.readFile("./config.json", "utf-8"),
-  );
+  ) as Config;
 
   const getDiscoveryMessage = (entity: Entity): string => {
     return JSON.stringify({
@@ -49,7 +51,6 @@ async function main() {
       state_topic: getTopic(entity, TopicType.STATE),
       availability_topic: getTopic(entity, TopicType.AVAILABILITY),
       optimistic: false,
-      retain: true,
       device: {
         identifiers: [deviceId],
         name: `pc2mqtt.${deviceId}`,
@@ -76,31 +77,34 @@ async function main() {
   );
 
   // 受信して状態を変更
-  client.on("message", async (topic, payload) => {
-    const entityIndex = entities.findIndex(
-      (entity) => getTopic(entity, TopicType.COMMAND) === topic,
-    );
-    if (entityIndex === -1) return;
+  client.on("message", (topic, payload) => {
+    void (async () => {
+      const entityIndex = entities.findIndex(
+        (entity) => getTopic(entity, TopicType.COMMAND) === topic,
+      );
+      if (entityIndex === -1) return;
 
-    const message = payload.toString();
-    const remote = remotes[entityIndex];
-    const running = await remote.isRunning();
+      const message = payload.toString();
+      const remote = remotes[entityIndex];
 
-    if (message === StatusMessage.ON && !running) {
-      await remote.startup();
-    } else if (message === StatusMessage.OFF && running) {
-      await remote.shutdown();
-    }
+      if (message === StatusMessage.ON) {
+        await remote.startup();
+      } else if (message === StatusMessage.OFF) {
+        await remote.suspend();
+      }
+    })();
   });
 
-  entities.map(async (entity) => {
-    // Home Assistantでデバイスを検出
-    await client.publishAsync(
-      `${haDiscoveryPrefix}/switch/${deviceId}/${entity.uniqueId}/config`,
-      getDiscoveryMessage(entity),
-      { retain: true },
-    );
-  });
+  await Promise.all(
+    entities.map(async (entity) => {
+      // Home Assistantでデバイスを検出
+      await client.publishAsync(
+        `${haDiscoveryPrefix}/switch/${deviceId}/${entity.uniqueId}/config`,
+        getDiscoveryMessage(entity),
+        { retain: true },
+      );
+    }),
+  );
 
   const publishState = () =>
     Promise.all(
@@ -115,7 +119,7 @@ async function main() {
 
   // チェック結果を定期的に送信
   const checkRunningTimerId = setInterval(
-    publishState,
+    () => void publishState(),
     env.get("CHECK_RUNNING_INTERVAL").default(10000).asIntPositive(),
   );
 
@@ -128,7 +132,7 @@ async function main() {
 
   // オンライン状態を定期的に送信
   const availabilityTimerId = setInterval(
-    () => publishAvailability("online"),
+    () => void publishAvailability("online"),
     env.get("AVAILABILITY_INTERVAL").default(10000).asIntPositive(),
   );
 
@@ -142,8 +146,8 @@ async function main() {
     process.exit(0);
   };
 
-  process.on("SIGINT", shutdownHandler);
-  process.on("SIGTERM", shutdownHandler);
+  process.on("SIGINT", () => void shutdownHandler());
+  process.on("SIGTERM", () => void shutdownHandler());
 
   await publishState();
   await publishAvailability("online");
