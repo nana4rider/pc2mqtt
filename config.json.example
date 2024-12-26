@@ -1,0 +1,18 @@
+{
+  "deviceId": "string",
+  "entities": [
+    {
+      "uniqueId": "string",
+      "name": "name",
+      "remote": {
+        "ssh": {
+          "username": "ssh username",
+          "privateKeyPath": "/path/to/id_rsa",
+          "port": 22
+        },
+        "macAddress": "",
+        "ipAddress": ""
+      }
+    }
+  ]
+}

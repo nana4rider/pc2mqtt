@@ -1,0 +1,29 @@
+{
+  "name": "pc2mqtt",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "lint": "npx eslint && npx prettier . --check",
+    "lint:fix": "npx eslint --fix && npx prettier . --write"
+  },
+  "author": "nana4rider",
+  "license": "ISC",
+  "dependencies": {
+    "env-var": "^7.5.0",
+    "mqtt": "^5.10.3",
+    "node-ssh": "^13.2.0",
+    "ping": "^0.4.4",
+    "wol": "^1.0.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/ping": "^0.4.4",
+    "@types/wol": "^1.0.4",
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0",
+    "prettier": "3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.2"
+  }
+}
