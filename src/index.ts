@@ -182,6 +182,11 @@ async function main() {
   console.log("pc2mqtt: ready");
 }
 
+// https://github.com/steelbrain/node-ssh/issues/421
+process.on('uncaughtException', (reason, promise) => {
+  console.error('Uncaught Exception at:', promise, 'reason:', reason);
+});
+
 main().catch((error) => {
   console.error("pc2mqtt:", error);
   process.exit(1);
