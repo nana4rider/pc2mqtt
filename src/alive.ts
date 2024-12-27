@@ -5,7 +5,7 @@ export async function requestAlive(config: RemoteConfig, intervalMs: number) {
   const getAlive = async (): Promise<boolean> => {
     try {
       const { alive } = await ping.promise.probe(config.ipAddress, {
-        timeout: 0.1,
+        timeout: 1,
       });
       return alive;
     } catch (err) {
