@@ -19,9 +19,12 @@ export default [
     },
     rules: {
       "@typescript-eslint/no-floating-promises": ["error"],
-      "@typescript-eslint/no-unused-vars": ["error", {
-        "caughtErrors": "none",
-      }]
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          caughtErrors: "none",
+        },
+      ],
     },
   },
 ];
