@@ -1,4 +1,4 @@
-import { RemoteConfig } from ".";
+import { RemoteConfig } from "..";
 import wol from "wol";
 import ip from "ip";
 

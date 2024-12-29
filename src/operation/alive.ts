@@ -1,4 +1,4 @@
-import { RemoteConfig } from ".";
+import { RemoteConfig } from "..";
 import ping from "ping";
 
 export async function requestAlive(config: RemoteConfig, intervalMs: number) {

@@ -2,9 +2,9 @@ import mqtt from "mqtt";
 import env from "env-var";
 import fs from "fs/promises";
 import { Config as SSHConfig } from "node-ssh";
-import { startup } from "./startup";
-import { suspend } from "./suspend";
-import { requestAlive } from "./alive";
+import { startup } from "./operation/startup";
+import { suspend } from "./operation/suspend";
+import { requestAlive } from "./operation/alive";
 
 export type RemoteConfig = {
   ssh: SSHConfig;
@@ -76,6 +76,11 @@ async function main() {
         name: `pc2mqtt.${deviceId}`,
         model: "pc2mqtt",
         manufacturer: "nana4rider",
+      },
+      origin: {
+        name: "pc2mqtt",
+        sw_version: "1.0.0",
+        support_url: "https://github.com/nana4rider/pc2mqtt",
       },
     });
   };
