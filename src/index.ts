@@ -149,7 +149,7 @@ async function main() {
       await publishState(alive.lastAlive);
       // Home Assistantでデバイスを検出
       await client.publishAsync(
-        `${haDiscoveryPrefix}/switch/${deviceId}/${entity.uniqueId}/config`,
+        `${haDiscoveryPrefix}/switch/${deviceId}_${entity.uniqueId}/config`,
         getDiscoveryMessage(entity),
         { retain: true },
       );
