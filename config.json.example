@@ -2,7 +2,7 @@
   "deviceId": "string",
   "entities": [
     {
-      "uniqueId": "string",
+      "id": "string",
       "name": "name",
       "remote": {
         "ssh": {

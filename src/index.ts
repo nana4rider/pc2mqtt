@@ -19,7 +19,7 @@ type Config = {
 };
 
 type Entity = {
-  uniqueId: string;
+  id: string;
   name: string;
   remote: RemoteConfig;
 };
@@ -38,7 +38,7 @@ const StatusMessage = {
 type StatusMessage = (typeof StatusMessage)[keyof typeof StatusMessage];
 
 function getTopic(device: Entity, type: TopicType): string {
-  return `pc2mqtt/${device.uniqueId}/${type}`;
+  return `pc2mqtt/${device.id}/${type}`;
 }
 
 async function main() {
@@ -63,16 +63,16 @@ async function main() {
     await fs.readFile("./config.json", "utf-8"),
   ) as Config;
 
-  const getDiscoveryMessage = (entity: Entity): string => {
-    return JSON.stringify({
-      unique_id: entity.uniqueId,
+  const getDiscoveryMessage = (entity: Entity) => {
+    return {
+      unique_id: `pc2mqtt_${deviceId}_${entity.id}`,
       name: entity.name,
       command_topic: getTopic(entity, TopicType.COMMAND),
       state_topic: getTopic(entity, TopicType.STATE),
       availability_topic: getTopic(entity, TopicType.AVAILABILITY),
       optimistic: true,
       device: {
-        identifiers: [deviceId],
+        identifiers: [`pc2mqtt_${deviceId}`],
         name: `pc2mqtt.${deviceId}`,
         model: "pc2mqtt",
         manufacturer: "nana4rider",
@@ -82,7 +82,7 @@ async function main() {
         sw_version: "1.0.0",
         support_url: "https://github.com/nana4rider/pc2mqtt",
       },
-    });
+    };
   };
 
   const client = await mqtt.connectAsync(
@@ -99,12 +99,14 @@ async function main() {
     entities.map((entity) => getTopic(entity, TopicType.COMMAND)),
   );
 
-  const alives = new Map(await Promise.all(
-    entities.map(async ({ uniqueId, remote }) => {
-      const alive = await requestAlive(remote, checkAliveInterval);
-      return [uniqueId, alive] as const;
-    })
-  ))
+  const alives = new Map(
+    await Promise.all(
+      entities.map(async ({ id: uniqueId, remote }) => {
+        const alive = await requestAlive(remote, checkAliveInterval);
+        return [uniqueId, alive] as const;
+      }),
+    ),
+  );
   const lastStateChangeTimes = new Map<string, number>();
 
   // 受信して状態を変更
@@ -114,14 +116,14 @@ async function main() {
     );
     if (!entity) return;
 
-    const { lastAlive } = alives.get(entity.uniqueId)!;
-    const now = Date.now()
+    const { lastAlive } = alives.get(entity.id)!;
+    const now = Date.now();
 
     if (message === StatusMessage.ON && !lastAlive) {
-      lastStateChangeTimes.set(entity.uniqueId, now)
+      lastStateChangeTimes.set(entity.id, now);
       await startup(entity.remote);
     } else if (message === StatusMessage.OFF && lastAlive) {
-      lastStateChangeTimes.set(entity.uniqueId, now)
+      lastStateChangeTimes.set(entity.id, now);
       await suspend(entity.remote);
     }
   };
@@ -136,21 +138,25 @@ async function main() {
           getTopic(entity, TopicType.STATE),
           value ? StatusMessage.ON : StatusMessage.OFF,
         );
-      const alive = alives.get(entity.uniqueId)!;
+      const alive = alives.get(entity.id)!;
       // 状態の変更を検知して送信
       alive.addListener((isAlive) => {
-        const lastStateChangeTime = lastStateChangeTimes.get(entity.uniqueId)
+        const lastStateChangeTime = lastStateChangeTimes.get(entity.id);
         // ON/OFFがすぐに反映されないので、一定時間状態の変更を通知しない
-        if (!lastStateChangeTime || (Date.now() - lastStateChangeTime > stateChangePauseDuration)) {
-          void publishState(isAlive)
+        if (
+          !lastStateChangeTime ||
+          Date.now() - lastStateChangeTime > stateChangePauseDuration
+        ) {
+          void publishState(isAlive);
         }
       });
       // 起動時に送信
       await publishState(alive.lastAlive);
       // Home Assistantでデバイスを検出
+      const discoveryMessage = getDiscoveryMessage(entity);
       await client.publishAsync(
-        `${haDiscoveryPrefix}/switch/${deviceId}_${entity.uniqueId}/config`,
-        getDiscoveryMessage(entity),
+        `${haDiscoveryPrefix}/switch/${discoveryMessage.unique_id}/config`,
+        JSON.stringify(discoveryMessage),
         { retain: true },
       );
     }),
@@ -188,8 +194,8 @@ async function main() {
 }
 
 // https://github.com/steelbrain/node-ssh/issues/421
-process.on('uncaughtException', (reason, promise) => {
-  console.error('Uncaught Exception at:', promise, 'reason:', reason);
+process.on("uncaughtException", (reason, promise) => {
+  console.error("Uncaught Exception at:", promise, "reason:", reason);
 });
 
 main().catch((error) => {
