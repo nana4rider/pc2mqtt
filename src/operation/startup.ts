@@ -1,6 +1,6 @@
-import { RemoteConfig } from "..";
-import wol from "wol";
+import { RemoteConfig } from "@/index";
 import ip from "ip";
+import wol from "wol";
 
 function getDefaultSubnetMask(ipAddress: string) {
   if (!ip.isV4Format(ipAddress)) {

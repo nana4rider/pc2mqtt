@@ -1,10 +1,11 @@
-import mqtt from "mqtt";
+import logger from "@/logger";
+import { requestAlive } from "@/operation/alive";
+import { startup } from "@/operation/startup";
+import { suspend } from "@/operation/suspend";
 import env from "env-var";
 import fs from "fs/promises";
+import mqtt from "mqtt";
 import { Config as SSHConfig } from "node-ssh";
-import { startup } from "./operation/startup";
-import { suspend } from "./operation/suspend";
-import { requestAlive } from "./operation/alive";
 
 export type RemoteConfig = {
   ssh: SSHConfig;
@@ -42,7 +43,7 @@ function getTopic(device: Entity, type: TopicType): string {
 }
 
 async function main() {
-  console.log("pc2mqtt: start");
+  logger.info("pc2mqtt: start");
 
   const haDiscoveryPrefix = env
     .get("HA_DISCOVERY_PREFIX")
@@ -93,7 +94,7 @@ async function main() {
     },
   );
 
-  console.log("mqtt-client: connected");
+  logger.info("mqtt-client: connected");
 
   await client.subscribeAsync(
     entities.map((entity) => getTopic(entity, TopicType.COMMAND)),
@@ -176,12 +177,12 @@ async function main() {
   );
 
   const shutdownHandler = async () => {
-    console.log("pc2mqtt: shutdown");
+    logger.info("pc2mqtt: shutdown");
     alives.forEach((alive) => alive.close());
     clearInterval(availabilityTimerId);
     await publishAvailability("offline");
     await client.endAsync();
-    console.log("mqtt-client: closed");
+    logger.info("mqtt-client: closed");
     process.exit(0);
   };
 
@@ -190,15 +191,17 @@ async function main() {
 
   await publishAvailability("online");
 
-  console.log("pc2mqtt: ready");
+  logger.info("pc2mqtt: ready");
 }
 
 // https://github.com/steelbrain/node-ssh/issues/421
 process.on("uncaughtException", (reason, promise) => {
-  console.error("Uncaught Exception at:", promise, "reason:", reason);
+  logger.error("Uncaught Exception at:", promise, "reason:", reason);
 });
 
-main().catch((error) => {
-  console.error("pc2mqtt:", error);
+try {
+  await main();
+} catch (err) {
+  logger.error("pc2mqtt:", err);
   process.exit(1);
-});
+}

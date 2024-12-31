@@ -2,12 +2,14 @@
   "name": "pc2mqtt",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
-    "dev": "node --env-file=.env -r ts-node/register src/index.ts",
+    "dev": "tsx --env-file=.env src/index.ts",
     "start": "node dist/index",
-    "build": "npx tsc",
+    "build": "node build.js",
     "lint": "npx eslint && npx prettier . --check",
-    "lint:fix": "npx eslint --fix && npx prettier . --write"
+    "lint:fix": "npx eslint --fix && npx prettier . --write",
+    "prepare": "husky"
   },
   "author": "nana4rider",
   "license": "ISC",
@@ -17,6 +19,7 @@
     "mqtt": "^5.10.3",
     "node-ssh": "^13.2.0",
     "ping": "^0.4.4",
+    "winston": "^3.17.0",
     "wol": "^1.0.7"
   },
   "devDependencies": {
@@ -25,10 +28,12 @@
     "@types/ping": "^0.4.4",
     "@types/ssh2": "^1.15.1",
     "@types/wol": "^1.0.4",
+    "esbuild-plugin-alias": "^0.2.1",
     "eslint": "^9.17.0",
     "globals": "^15.14.0",
+    "husky": "^9.1.7",
     "prettier": "3.4.2",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.18.2"
   }

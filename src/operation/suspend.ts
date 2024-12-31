@@ -1,4 +1,4 @@
-import { RemoteConfig } from "..";
+import { RemoteConfig } from "@/index";
 import { NodeSSH } from "node-ssh";
 import path from "path";
 
