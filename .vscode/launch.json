@@ -4,11 +4,12 @@
     {
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "${env:NVM_BIN}${env:NVM_SYMLINK}/npm",
       "args": ["run", "dev"],
       "name": "npm run dev",
       "cwd": "${workspaceFolder}",
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal"
     }
   ]
 }
