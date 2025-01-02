@@ -1,4 +1,5 @@
 import { RemoteConfig } from "@/index";
+import logger from "@/logger";
 import { NodeSSH } from "node-ssh";
 import path from "path";
 
@@ -46,6 +47,7 @@ export async function suspend(config: RemoteConfig): Promise<void> {
       await sshClient.execCommand(suspendCommand);
     } catch (err) {
       // Timed out while waiting for handshake
+      logger.silly(err);
     }
   } catch (err) {
     console.error("Error executing suspend command:", err);
