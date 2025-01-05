@@ -1,4 +1,4 @@
-import { RemoteConfig } from "@/index";
+import { RemoteConfig } from "@/entity";
 import ip from "ip";
 import wol from "wol";
 

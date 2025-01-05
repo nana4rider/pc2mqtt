@@ -1,4 +1,5 @@
-import { RemoteConfig } from "@/index";
+import { RemoteConfig } from "@/entity";
+import logger from "@/logger";
 import ping from "ping";
 
 export async function requestAlive(config: RemoteConfig, intervalMs: number) {
@@ -9,7 +10,7 @@ export async function requestAlive(config: RemoteConfig, intervalMs: number) {
       });
       return alive;
     } catch (err) {
-      console.error("Error pinging host:", err);
+      logger.error("Error pinging host:", err);
       return false;
     }
   };

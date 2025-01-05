@@ -1,46 +1,24 @@
+import { Entity } from "@/entity";
 import logger from "@/logger";
 import { requestAlive } from "@/operation/alive";
 import { startup } from "@/operation/startup";
 import { suspend } from "@/operation/suspend";
+import { buildDevice, buildEntity, buildOrigin } from "@/payload/builder";
+import { getTopic, TopicType } from "@/payload/topic";
 import env from "env-var";
 import fs from "fs/promises";
 import mqtt from "mqtt";
-import { Config as SSHConfig } from "node-ssh";
-
-export type RemoteConfig = {
-  ssh: SSHConfig;
-  macAddress: string;
-  ipAddress: string;
-  subnetMask?: string;
-};
 
 type Config = {
   deviceId: string;
   entities: Entity[];
 };
 
-type Entity = {
-  id: string;
-  name: string;
-  remote: RemoteConfig;
-};
-
-const TopicType = {
-  COMMAND: "set",
-  STATE: "state",
-  AVAILABILITY: "availability",
-} as const;
-type TopicType = (typeof TopicType)[keyof typeof TopicType];
-
 const StatusMessage = {
   ON: "ON",
   OFF: "OFF",
 } as const;
 type StatusMessage = (typeof StatusMessage)[keyof typeof StatusMessage];
-
-function getTopic(device: Entity, type: TopicType): string {
-  return `pc2mqtt/${device.id}/${type}`;
-}
 
 async function main() {
   logger.info("pc2mqtt: start");
@@ -64,27 +42,8 @@ async function main() {
     await fs.readFile("./config.json", "utf-8"),
   ) as Config;
 
-  const getDiscoveryMessage = (entity: Entity) => {
-    return {
-      unique_id: `pc2mqtt_${deviceId}_${entity.id}`,
-      name: entity.name,
-      command_topic: getTopic(entity, TopicType.COMMAND),
-      state_topic: getTopic(entity, TopicType.STATE),
-      availability_topic: getTopic(entity, TopicType.AVAILABILITY),
-      optimistic: true,
-      device: {
-        identifiers: [`pc2mqtt_${deviceId}`],
-        name: `pc2mqtt.${deviceId}`,
-        model: "pc2mqtt",
-        manufacturer: "nana4rider",
-      },
-      origin: {
-        name: "pc2mqtt",
-        sw_version: "1.0.0",
-        support_url: "https://github.com/nana4rider/pc2mqtt",
-      },
-    };
-  };
+  const origin = await buildOrigin();
+  const device = buildDevice(deviceId);
 
   const client = await mqtt.connectAsync(
     env.get("MQTT_BROKER").required().asString(),
@@ -154,7 +113,11 @@ async function main() {
       // 起動時に送信
       await publishState(alive.lastAlive);
       // Home Assistantでデバイスを検出
-      const discoveryMessage = getDiscoveryMessage(entity);
+      const discoveryMessage = {
+        ...buildEntity(deviceId, entity),
+        ...device,
+        ...origin,
+      };
       await client.publishAsync(
         `${haDiscoveryPrefix}/switch/${discoveryMessage.unique_id}/config`,
         JSON.stringify(discoveryMessage),
