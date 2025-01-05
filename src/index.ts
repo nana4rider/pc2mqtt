@@ -159,7 +159,7 @@ async function main() {
 
 // https://github.com/steelbrain/node-ssh/issues/421
 process.on("uncaughtException", (reason) => {
-  logger.error("Uncaught Exception at:", reason);
+  logger.warn("Uncaught Exception at:", reason);
 });
 
 try {
