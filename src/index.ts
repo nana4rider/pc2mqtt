@@ -157,9 +157,13 @@ async function main() {
   logger.info("pc2mqtt: ready");
 }
 
-// https://github.com/steelbrain/node-ssh/issues/421
 process.on("uncaughtException", (reason) => {
-  logger.warn("Uncaught Exception at:", reason);
+  if (reason.message.includes("ECONNRESET")) {
+    // https://github.com/steelbrain/node-ssh/issues/421
+    logger.debug("Uncaught Exception at:", reason);
+  } else {
+    throw reason;
+  }
 });
 
 try {
