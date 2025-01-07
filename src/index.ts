@@ -7,7 +7,9 @@ import { buildDevice, buildEntity, buildOrigin } from "@/payload/builder";
 import { getTopic, TopicType } from "@/payload/topic";
 import env from "env-var";
 import fs from "fs/promises";
+import http from "http";
 import mqtt from "mqtt";
+import { promisify } from "util";
 
 type Config = {
   deviceId: string;
@@ -21,12 +23,13 @@ const StatusMessage = {
 type StatusMessage = (typeof StatusMessage)[keyof typeof StatusMessage];
 
 async function main() {
-  logger.info("pc2mqtt: start");
+  logger.info("start");
 
   const haDiscoveryPrefix = env
     .get("HA_DISCOVERY_PREFIX")
     .default("homeassistant")
     .asString();
+  const port = env.get("PORT").default(3000).asPortNumber();
   // 状態を確認する間隔
   const checkAliveInterval = env
     .get("CHECK_ALIVE_INTERVAL")
@@ -53,7 +56,7 @@ async function main() {
     },
   );
 
-  logger.info("mqtt-client: connected");
+  logger.info("[MQTT] connected");
 
   await client.subscribeAsync(
     entities.map((entity) => getTopic(entity, TopicType.COMMAND)),
@@ -139,13 +142,28 @@ async function main() {
     env.get("AVAILABILITY_INTERVAL").default(10000).asIntPositive(),
   );
 
+  const server = http.createServer((req, res) => {
+    if (req.url === "/health") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({}));
+    } else {
+      res.writeHead(404);
+      res.end();
+    }
+  });
+
+  await promisify(server.listen.bind(server, port))();
+  logger.info(`Health check server running on port ${port}`);
+
   const shutdownHandler = async () => {
-    logger.info("pc2mqtt: shutdown");
+    logger.info("shutdown");
+    await promisify(server.close.bind(server))();
+    logger.info("[HTTP] closed");
     alives.forEach((alive) => alive.close());
     clearInterval(availabilityTimerId);
     await publishAvailability("offline");
     await client.endAsync();
-    logger.info("mqtt-client: closed");
+    logger.info("[MQTT] closed");
     process.exit(0);
   };
 
@@ -154,7 +172,7 @@ async function main() {
 
   await publishAvailability("online");
 
-  logger.info("pc2mqtt: ready");
+  logger.info("ready");
 }
 
 process.on("uncaughtException", (reason) => {
@@ -169,6 +187,6 @@ process.on("uncaughtException", (reason) => {
 try {
   await main();
 } catch (err) {
-  logger.error("pc2mqtt:", err);
+  logger.error("main() error:", err);
   process.exit(1);
 }

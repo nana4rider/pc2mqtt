@@ -1,9 +1,12 @@
 import { Entity } from "@/entity";
 import { getTopic, TopicType } from "@/payload/topic";
+import env from "env-var";
 import { readFile } from "fs/promises";
 import type { JsonObject, PackageJson } from "type-fest";
 
 export type Payload = JsonObject;
+
+const qos = env.get("QOS").default(1).asIntPositive();
 
 export function buildEntity(deviceId: string, entity: Entity) {
   return {
@@ -13,6 +16,7 @@ export function buildEntity(deviceId: string, entity: Entity) {
     state_topic: getTopic(entity, TopicType.STATE),
     availability_topic: getTopic(entity, TopicType.AVAILABILITY),
     optimistic: true,
+    qos,
   } as const;
 }
 

@@ -26,6 +26,7 @@ describe("buildEntity", () => {
       `pc2mqtt/entity1/${TopicType.AVAILABILITY}`,
     );
     expect(entity).toHaveProperty("optimistic", true);
+    expect(entity).toHaveProperty("qos");
   });
 });
 
