@@ -6,7 +6,7 @@ import type { JsonObject, PackageJson } from "type-fest";
 
 export type Payload = JsonObject;
 
-const qos = env.get("QOS").default(1).asIntPositive();
+const QOS = env.get("QOS").default(1).asIntPositive();
 
 export function buildEntity(deviceId: string, entity: Entity) {
   return {
@@ -16,7 +16,7 @@ export function buildEntity(deviceId: string, entity: Entity) {
     state_topic: getTopic(entity, TopicType.STATE),
     availability_topic: getTopic(entity, TopicType.AVAILABILITY),
     optimistic: true,
-    qos,
+    qos: QOS,
   } as const;
 }
 

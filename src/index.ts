@@ -22,24 +22,31 @@ const StatusMessage = {
 } as const;
 type StatusMessage = (typeof StatusMessage)[keyof typeof StatusMessage];
 
+const HA_DISCOVERY_PREFIX = env
+  .get("HA_DISCOVERY_PREFIX")
+  .default("homeassistant")
+  .asString();
+const PORT = env.get("PORT").default(3000).asPortNumber();
+const MQTT_BROKER = env.get("MQTT_BROKER").required().asString();
+const MQTT_USERNAME = env.get("MQTT_USERNAME").asString();
+const MQTT_PASSWORD = env.get("MQTT_PASSWORD").asString();
+const AVAILABILITY_INTERVAL = env
+  .get("AVAILABILITY_INTERVAL")
+  .default(10000)
+  .asIntPositive();
+// 状態を確認する間隔
+const CHECK_ALIVE_INTERVAL = env
+  .get("CHECK_ALIVE_INTERVAL")
+  .default(5000)
+  .asInt();
+// ON/OFF切り替え後、状態の更新を止める時間
+const STATE_CHANGE_PAUSE_DURATION = env
+  .get("STATE_CHANGE_PAUSE_DURATION")
+  .default(30000)
+  .asInt();
+
 async function main() {
   logger.info("start");
-
-  const haDiscoveryPrefix = env
-    .get("HA_DISCOVERY_PREFIX")
-    .default("homeassistant")
-    .asString();
-  const port = env.get("PORT").default(3000).asPortNumber();
-  // 状態を確認する間隔
-  const checkAliveInterval = env
-    .get("CHECK_ALIVE_INTERVAL")
-    .default(5000)
-    .asInt();
-  // ON/OFF切り替え後、状態の更新を止める時間
-  const stateChangePauseDuration = env
-    .get("STATE_CHANGE_PAUSE_DURATION")
-    .default(30000)
-    .asInt();
 
   const { deviceId, entities } = JSON.parse(
     await fs.readFile("./config.json", "utf-8"),
@@ -48,13 +55,10 @@ async function main() {
   const origin = await buildOrigin();
   const device = buildDevice(deviceId);
 
-  const client = await mqtt.connectAsync(
-    env.get("MQTT_BROKER").required().asString(),
-    {
-      username: env.get("MQTT_USERNAME").asString(),
-      password: env.get("MQTT_PASSWORD").asString(),
-    },
-  );
+  const client = await mqtt.connectAsync(MQTT_BROKER, {
+    username: MQTT_USERNAME,
+    password: MQTT_PASSWORD,
+  });
 
   logger.info("[MQTT] connected");
 
@@ -65,7 +69,7 @@ async function main() {
   const alives = new Map(
     await Promise.all(
       entities.map(async ({ id: uniqueId, remote }) => {
-        const alive = await requestAlive(remote, checkAliveInterval);
+        const alive = await requestAlive(remote, CHECK_ALIVE_INTERVAL);
         return [uniqueId, alive] as const;
       }),
     ),
@@ -108,7 +112,7 @@ async function main() {
         // ON/OFFがすぐに反映されないので、一定時間状態の変更を通知しない
         if (
           !lastStateChangeTime ||
-          Date.now() - lastStateChangeTime > stateChangePauseDuration
+          Date.now() - lastStateChangeTime > STATE_CHANGE_PAUSE_DURATION
         ) {
           void publishState(isAlive);
         }
@@ -122,7 +126,7 @@ async function main() {
         ...origin,
       };
       await client.publishAsync(
-        `${haDiscoveryPrefix}/switch/${discoveryMessage.unique_id}/config`,
+        `${HA_DISCOVERY_PREFIX}/switch/${discoveryMessage.unique_id}/config`,
         JSON.stringify(discoveryMessage),
         { retain: true },
       );
@@ -139,7 +143,7 @@ async function main() {
   // オンライン状態を定期的に送信
   const availabilityTimerId = setInterval(
     () => void publishAvailability("online"),
-    env.get("AVAILABILITY_INTERVAL").default(10000).asIntPositive(),
+    AVAILABILITY_INTERVAL,
   );
 
   const server = http.createServer((req, res) => {
@@ -152,8 +156,8 @@ async function main() {
     }
   });
 
-  await promisify(server.listen.bind(server, port))();
-  logger.info(`Health check server running on port ${port}`);
+  await promisify(server.listen.bind(server, PORT))();
+  logger.info(`Health check server running on port ${PORT}`);
 
   const shutdownHandler = async () => {
     logger.info("shutdown");
