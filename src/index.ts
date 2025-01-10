@@ -91,7 +91,7 @@ async function main() {
         getTopic(entity, TopicType.STATE),
         value ? StatusMessage.ON : StatusMessage.OFF,
         // 定期的に状態を送信するのでretainは付与しない
-        false,
+        { retain: false },
       );
     const alive = alives.get(entity.id)!;
     // 状態の変更を検知して送信
@@ -116,7 +116,7 @@ async function main() {
     mqtt.publish(
       `${HA_DISCOVERY_PREFIX}/switch/${discoveryMessage.unique_id}/config`,
       JSON.stringify(discoveryMessage),
-      true,
+      { qos: 1, retain: true },
     );
   });
 

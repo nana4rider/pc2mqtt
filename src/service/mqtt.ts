@@ -1,6 +1,6 @@
 import logger from "@/logger";
 import env from "env-var";
-import mqttjs, { IClientPublishOptions } from "mqtt";
+import mqttjs from "mqtt";
 import { setTimeout } from "timers/promises";
 
 const MQTT_BROKER = env.get("MQTT_BROKER").required().asString();
@@ -13,7 +13,7 @@ const MQTT_TASK_INTERVAL = env
 
 export default async function initializeMqttClient(
   subscribeTopics: string[],
-  handleMessage: (topic: string, message: string) => Promise<void>,
+  handleMessage: (topic: string, message: string) => void | Promise<void>,
 ) {
   const client = await mqttjs.connectAsync(MQTT_BROKER, {
     username: MQTT_USERNAME,
@@ -23,9 +23,16 @@ export default async function initializeMqttClient(
 
   client.on("message", (topic, payload) => {
     logger.debug(`[MQTT] receive topic: ${topic}`);
-    handleMessage(topic, payload.toString()).catch((err) => {
+    try {
+      const result = handleMessage(topic, payload.toString());
+      if (result instanceof Promise) {
+        result.catch((err) => {
+          logger.error("[MQTT] message error:", err);
+        });
+      }
+    } catch (err) {
       logger.error("[MQTT] message error:", err);
-    });
+    }
   });
 
   logger.info("[MQTT] connected");
@@ -65,11 +72,11 @@ export default async function initializeMqttClient(
     logger.info("[MQTT] closed");
   };
 
-  const publish = (topic: string, message: string, retain?: boolean): void => {
-    const options: IClientPublishOptions = {};
-    if (retain) {
-      options.retain = true;
-    }
+  const publish = (
+    topic: string,
+    message: string,
+    options?: { retain?: boolean; qos?: 0 | 1 | 2 },
+  ): void => {
     taskQueue.push(async () => {
       await client.publishAsync(topic, message, options);
     });
