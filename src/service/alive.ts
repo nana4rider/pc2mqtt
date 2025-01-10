@@ -2,7 +2,16 @@ import { RemoteConfig } from "@/entity";
 import logger from "@/logger";
 import ping from "ping";
 
-export async function requestAlive(config: RemoteConfig, intervalMs: number) {
+export type Alive = {
+  readonly lastAlive: boolean;
+  addListener: (listener: (isAlive: boolean) => void) => void;
+  close: () => void;
+};
+
+export async function requestAlive(
+  config: RemoteConfig,
+  intervalMs: number,
+): Promise<Alive> {
   const getAlive = async (): Promise<boolean> => {
     try {
       const { alive } = await ping.promise.probe(config.ipAddress, {

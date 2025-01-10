@@ -6,6 +6,12 @@ import type { JsonObject, PackageJson } from "type-fest";
 
 export type Payload = JsonObject;
 
+export const StatusMessage = {
+  ON: "ON",
+  OFF: "OFF",
+} as const;
+type StatusMessage = (typeof StatusMessage)[keyof typeof StatusMessage];
+
 const QOS = env.get("QOS").default(1).asIntPositive();
 
 export function buildEntity(deviceId: string, entity: Entity) {
