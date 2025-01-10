@@ -85,49 +85,46 @@ async function main() {
 
   const mqtt = await initializeMqttClient(subscribeTopics, handleMessage);
 
-  await Promise.all(
-    entities.map(async (entity) => {
-      const publishState = (value: boolean) =>
-        mqtt.publish(
-          getTopic(entity, TopicType.STATE),
-          value ? StatusMessage.ON : StatusMessage.OFF,
-          // 定期的に状態を送信するのでretainは付与しない
-          false,
-        );
-      const alive = alives.get(entity.id)!;
-      // 状態の変更を検知して送信
-      alive.addListener((isAlive) => {
-        const lastStateChangeTime = lastStateChangeTimes.get(entity.id);
-        // ON/OFFがすぐに反映されないので、一定時間状態の変更を通知しない
-        if (
-          !lastStateChangeTime ||
-          Date.now() - lastStateChangeTime > STATE_CHANGE_PAUSE_DURATION
-        ) {
-          void publishState(isAlive);
-        }
-      });
-      // 起動時に送信
-      await publishState(alive.lastAlive);
-      // Home Assistantでデバイスを検出
-      const discoveryMessage = {
-        ...buildEntity(deviceId, entity),
-        ...device,
-        ...origin,
-      };
-      await mqtt.publish(
-        `${HA_DISCOVERY_PREFIX}/switch/${discoveryMessage.unique_id}/config`,
-        JSON.stringify(discoveryMessage),
-        true,
+  entities.forEach((entity) => {
+    const publishState = (value: boolean) =>
+      mqtt.publish(
+        getTopic(entity, TopicType.STATE),
+        value ? StatusMessage.ON : StatusMessage.OFF,
+        // 定期的に状態を送信するのでretainは付与しない
+        false,
       );
-    }),
-  );
-
-  const publishAvailability = (value: string) =>
-    Promise.all(
-      entities.map((entity) =>
-        mqtt.publish(getTopic(entity, TopicType.AVAILABILITY), value),
-      ),
+    const alive = alives.get(entity.id)!;
+    // 状態の変更を検知して送信
+    alive.addListener((isAlive) => {
+      const lastStateChangeTime = lastStateChangeTimes.get(entity.id);
+      // ON/OFFがすぐに反映されないので、一定時間状態の変更を通知しない
+      if (
+        !lastStateChangeTime ||
+        Date.now() - lastStateChangeTime > STATE_CHANGE_PAUSE_DURATION
+      ) {
+        void publishState(isAlive);
+      }
+    });
+    // 起動時に送信
+    publishState(alive.lastAlive);
+    // Home Assistantでデバイスを検出
+    const discoveryMessage = {
+      ...buildEntity(deviceId, entity),
+      ...device,
+      ...origin,
+    };
+    mqtt.publish(
+      `${HA_DISCOVERY_PREFIX}/switch/${discoveryMessage.unique_id}/config`,
+      JSON.stringify(discoveryMessage),
+      true,
     );
+  });
+
+  const publishAvailability = (value: string) => {
+    entities.forEach((entity) => {
+      mqtt.publish(getTopic(entity, TopicType.AVAILABILITY), value);
+    });
+  };
 
   // オンライン状態を定期的に送信
   const availabilityTimerId = setInterval(
@@ -142,8 +139,8 @@ async function main() {
     logger.info("shutdown");
     alives.forEach((alive) => alive.close());
     clearInterval(availabilityTimerId);
-    await publishAvailability("offline");
-    await mqtt.close();
+    publishAvailability("offline");
+    await mqtt.close(true);
     await http.close();
     process.exit(0);
   };
@@ -151,7 +148,7 @@ async function main() {
   process.on("SIGINT", () => void shutdownHandler());
   process.on("SIGTERM", () => void shutdownHandler());
 
-  await publishAvailability("online");
+  publishAvailability("online");
 
   logger.info("ready");
 }
