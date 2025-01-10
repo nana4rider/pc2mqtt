@@ -24,7 +24,7 @@ describe("requestAlive", () => {
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
-    const { requestAlive } = await import("@/operation/alive");
+    const { requestAlive } = await import("@/service/alive");
     const { lastAlive, close } = await requestAlive(config, 100000);
     close();
 
@@ -37,7 +37,7 @@ describe("requestAlive", () => {
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
-    const { requestAlive } = await import("@/operation/alive");
+    const { requestAlive } = await import("@/service/alive");
     const { lastAlive, close } = await requestAlive(config, 100000);
     close();
 
@@ -52,7 +52,7 @@ describe("requestAlive", () => {
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
-    const { requestAlive } = await import("@/operation/alive");
+    const { requestAlive } = await import("@/service/alive");
     const { lastAlive, close } = await requestAlive(config, 100000);
     close();
 
@@ -67,7 +67,7 @@ describe("requestAlive", () => {
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
-    const { requestAlive } = await import("@/operation/alive");
+    const { requestAlive } = await import("@/service/alive");
     const alive = await requestAlive(config, 300);
     const mockListener = jest.fn();
     alive.addListener(mockListener);

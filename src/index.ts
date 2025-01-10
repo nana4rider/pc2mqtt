@@ -1,15 +1,14 @@
 import { Entity } from "@/entity";
 import logger from "@/logger";
-import { requestAlive } from "@/operation/alive";
-import { startup } from "@/operation/startup";
-import { suspend } from "@/operation/suspend";
 import { buildDevice, buildEntity, buildOrigin } from "@/payload/builder";
 import { getTopic, TopicType } from "@/payload/topic";
+import { requestAlive } from "@/service/alive";
+import initializeHttpServer from "@/service/http";
+import initializeMqttClient from "@/service/mqtt";
+import { startup } from "@/service/startup";
+import { suspend } from "@/service/suspend";
 import env from "env-var";
 import fs from "fs/promises";
-import http from "http";
-import mqtt from "mqtt";
-import { promisify } from "util";
 
 type Config = {
   deviceId: string;
@@ -26,10 +25,6 @@ const HA_DISCOVERY_PREFIX = env
   .get("HA_DISCOVERY_PREFIX")
   .default("homeassistant")
   .asString();
-const PORT = env.get("PORT").default(3000).asPortNumber();
-const MQTT_BROKER = env.get("MQTT_BROKER").required().asString();
-const MQTT_USERNAME = env.get("MQTT_USERNAME").asString();
-const MQTT_PASSWORD = env.get("MQTT_PASSWORD").asString();
 const AVAILABILITY_INTERVAL = env
   .get("AVAILABILITY_INTERVAL")
   .default(10000)
@@ -54,17 +49,6 @@ async function main() {
 
   const origin = await buildOrigin();
   const device = buildDevice(deviceId);
-
-  const client = await mqtt.connectAsync(MQTT_BROKER, {
-    username: MQTT_USERNAME,
-    password: MQTT_PASSWORD,
-  });
-
-  logger.info("[MQTT] connected");
-
-  await client.subscribeAsync(
-    entities.map((entity) => getTopic(entity, TopicType.COMMAND)),
-  );
 
   const alives = new Map(
     await Promise.all(
@@ -94,16 +78,21 @@ async function main() {
       await suspend(entity.remote);
     }
   };
-  client.on("message", (topic, payload) => {
-    void handleMessage(topic, payload.toString());
-  });
+
+  const subscribeTopics = entities.map((entity) =>
+    getTopic(entity, TopicType.COMMAND),
+  );
+
+  const mqtt = await initializeMqttClient(subscribeTopics, handleMessage);
 
   await Promise.all(
     entities.map(async (entity) => {
       const publishState = (value: boolean) =>
-        client.publishAsync(
+        mqtt.publish(
           getTopic(entity, TopicType.STATE),
           value ? StatusMessage.ON : StatusMessage.OFF,
+          // 定期的に状態を送信するのでretainは付与しない
+          false,
         );
       const alive = alives.get(entity.id)!;
       // 状態の変更を検知して送信
@@ -125,10 +114,10 @@ async function main() {
         ...device,
         ...origin,
       };
-      await client.publishAsync(
+      await mqtt.publish(
         `${HA_DISCOVERY_PREFIX}/switch/${discoveryMessage.unique_id}/config`,
         JSON.stringify(discoveryMessage),
-        { retain: true },
+        true,
       );
     }),
   );
@@ -136,7 +125,7 @@ async function main() {
   const publishAvailability = (value: string) =>
     Promise.all(
       entities.map((entity) =>
-        client.publishAsync(getTopic(entity, TopicType.AVAILABILITY), value),
+        mqtt.publish(getTopic(entity, TopicType.AVAILABILITY), value),
       ),
     );
 
@@ -146,28 +135,16 @@ async function main() {
     AVAILABILITY_INTERVAL,
   );
 
-  const server = http.createServer((req, res) => {
-    if (req.url === "/health") {
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({}));
-    } else {
-      res.writeHead(404);
-      res.end();
-    }
-  });
-
-  await promisify(server.listen.bind(server, PORT))();
-  logger.info(`Health check server running on port ${PORT}`);
+  const http = await initializeHttpServer();
+  http.setEndpoint("/health", () => ({}));
 
   const shutdownHandler = async () => {
     logger.info("shutdown");
-    await promisify(server.close.bind(server))();
-    logger.info("[HTTP] closed");
     alives.forEach((alive) => alive.close());
     clearInterval(availabilityTimerId);
     await publishAvailability("offline");
-    await client.endAsync();
-    logger.info("[MQTT] closed");
+    await mqtt.close();
+    await http.close();
     process.exit(0);
   };
 

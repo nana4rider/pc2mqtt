@@ -1,5 +1,6 @@
 import { RemoteConfig } from "@/entity";
 import { jest } from "@jest/globals";
+import path from "path";
 
 const mockConnect = jest.fn();
 const mockExecCommand = jest.fn();
@@ -17,14 +18,52 @@ jest.unstable_mockModule("node-ssh", () => {
 });
 
 describe("getSuspendCommand", () => {
+  const env = process.env;
   beforeEach(() => {
-    jest.resetAllMocks();
+    jest.resetModules();
+    process.env = { ...env };
+  });
+
+  test("Windows id_rsa", async () => {
+    const homePath = "path/to/home";
+    delete process.env.HOME;
+    process.env.HOMEPATH = homePath;
+
+    const { suspend } = await import("@/service/suspend");
+    await suspend({
+      ipAddress: "192.168.1.1",
+      ssh: {},
+    } as RemoteConfig);
+
+    expect(mockConnect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        privateKeyPath: path.join(homePath, ".ssh", "id_rsa"),
+      }),
+    );
+  });
+
+  test("Linux id_rsa", async () => {
+    const homePath = "path/to/home";
+    process.env.HOME = homePath;
+    delete process.env.HOMEPATH;
+
+    const { suspend } = await import("@/service/suspend");
+    await suspend({
+      ipAddress: "192.168.1.1",
+      ssh: {},
+    } as RemoteConfig);
+
+    expect(mockConnect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        privateKeyPath: path.join(homePath, ".ssh", "id_rsa"),
+      }),
+    );
   });
 
   test("Linux OS", async () => {
     mockExecCommand.mockReturnValueOnce({ stdout: "Linux" });
 
-    const { suspend } = await import("@/operation/suspend");
+    const { suspend } = await import("@/service/suspend");
     await suspend({
       ipAddress: "192.168.1.1",
       ssh: {},
@@ -36,7 +75,7 @@ describe("getSuspendCommand", () => {
   test("Mac OS", async () => {
     mockExecCommand.mockReturnValueOnce({ stdout: "Darwin" });
 
-    const { suspend } = await import("@/operation/suspend");
+    const { suspend } = await import("@/service/suspend");
     await suspend({
       ipAddress: "192.168.1.1",
       ssh: {},
@@ -48,7 +87,7 @@ describe("getSuspendCommand", () => {
   test("Windows OS", async () => {
     mockExecCommand.mockReturnValueOnce({ stdout: "" });
 
-    const { suspend } = await import("@/operation/suspend");
+    const { suspend } = await import("@/service/suspend");
     await suspend({
       ipAddress: "192.168.1.1",
       ssh: {},
@@ -65,7 +104,7 @@ describe("getSuspendCommand", () => {
     });
     mockExecCommand.mockReturnValueOnce({ stdout: "" });
 
-    const { suspend } = await import("@/operation/suspend");
+    const { suspend } = await import("@/service/suspend");
     const actual = suspend({
       ipAddress: "192.168.1.1",
       ssh: {},
@@ -80,7 +119,7 @@ describe("getSuspendCommand", () => {
       throw new Error();
     });
 
-    const { suspend } = await import("@/operation/suspend");
+    const { suspend } = await import("@/service/suspend");
     const actual = suspend({
       ipAddress: "192.168.1.1",
       ssh: {},

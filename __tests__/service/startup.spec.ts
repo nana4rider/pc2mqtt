@@ -34,7 +34,7 @@ describe("startup", () => {
   test("指定されたサブネットマスクを使用して wol.wake を呼び出す", async () => {
     mockSubnet.mockReturnValue({ broadcastAddress: "192.168.1.255" });
 
-    const { startup } = await import("@/operation/startup");
+    const { startup } = await import("@/service/startup");
     await startup({
       ipAddress: "192.168.1.10",
       macAddress: "00:11:22:33:44:55",
@@ -53,7 +53,7 @@ describe("startup", () => {
     mockFromPrefixLen.mockReturnValue("255.0.0.0");
     mockSubnet.mockReturnValue({ broadcastAddress: "10.255.255.255" });
 
-    const { startup } = await import("@/operation/startup");
+    const { startup } = await import("@/service/startup");
     await startup({
       ipAddress: "10.0.0.1",
       macAddress: "00:11:22:33:44:55",
@@ -74,7 +74,7 @@ describe("startup", () => {
     mockFromPrefixLen.mockReturnValue("255.255.0.0");
     mockSubnet.mockReturnValue({ broadcastAddress: "172.16.255.255" });
 
-    const { startup } = await import("@/operation/startup");
+    const { startup } = await import("@/service/startup");
     await startup({
       ipAddress: "172.16.0.1",
       macAddress: "00:11:22:33:44:55",
@@ -95,7 +95,7 @@ describe("startup", () => {
     mockFromPrefixLen.mockReturnValue("255.255.255.0");
     mockSubnet.mockReturnValue({ broadcastAddress: "192.168.1.255" });
 
-    const { startup } = await import("@/operation/startup");
+    const { startup } = await import("@/service/startup");
     await startup({
       ipAddress: "192.168.1.1",
       macAddress: "00:11:22:33:44:55",
@@ -113,7 +113,7 @@ describe("startup", () => {
   test("IP アドレスが IPv4 形式でない場合、エラーをスローする", async () => {
     mockIsV4Format.mockReturnValue(false);
 
-    const { startup } = await import("@/operation/startup");
+    const { startup } = await import("@/service/startup");
 
     await expect(
       startup({
@@ -130,7 +130,7 @@ describe("startup", () => {
     mockIsV4Format.mockReturnValue(true);
     mockToBuffer.mockReturnValue(Buffer.from([240]));
 
-    const { startup } = await import("@/operation/startup");
+    const { startup } = await import("@/service/startup");
 
     await expect(
       startup({
