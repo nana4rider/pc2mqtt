@@ -15,7 +15,8 @@ import env from "env-var";
 const HA_DISCOVERY_PREFIX = env
   .get("HA_DISCOVERY_PREFIX")
   .default("homeassistant")
-  .asString(); // ON/OFF切り替え後、状態の更新を止める時間
+  .asString();
+// ON/OFF切り替え後、状態の更新を止める時間
 const STATE_CHANGE_PAUSE_DURATION = env
   .get("STATE_CHANGE_PAUSE_DURATION")
   .default(30000)
