@@ -1,4 +1,5 @@
 import pluginJs from "@eslint/js";
+import jest from "eslint-plugin-jest";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
@@ -32,6 +33,15 @@ export default [
           destructuredArrayIgnorePattern: "^_",
         },
       ],
+    },
+  },
+  {
+    files: ["__tests__/**/*.ts"],
+    ...jest.configs["flat/recommended"],
+    rules: {
+      ...jest.configs["flat/recommended"].rules,
+      "@typescript-eslint/unbound-method": "off",
+      "jest/unbound-method": "error",
     },
   },
 ];
