@@ -30,7 +30,7 @@ describe("buildEntity", () => {
   });
 });
 
-describe("device", () => {
+describe("buildDevice", () => {
   test("必要な属性が揃っている", () => {
     const device = buildDevice("deviceId1");
     expect(device).toHaveProperty("device.identifiers");
@@ -40,7 +40,7 @@ describe("device", () => {
   });
 });
 
-describe("origin", () => {
+describe("buildOrigin", () => {
   test("必要な属性が揃っている", async () => {
     const origin = await buildOrigin();
     expect(origin).toHaveProperty("origin.name");
