@@ -1,18 +1,13 @@
 import { RemoteConfig } from "@/entity";
-import { jest } from "@jest/globals";
+import { requestAlive } from "@/service/alive";
+import ping from "ping";
 import { setTimeout } from "timers/promises";
 
-const mockProbe = jest.fn();
-
-jest.unstable_mockModule("ping", () => {
-  return {
-    default: {
-      promise: {
-        probe: mockProbe,
-      },
-    },
-  };
-});
+jest.mock("ping", () => ({
+  promise: {
+    probe: jest.fn(),
+  },
+}));
 
 describe("requestAlive", () => {
   const env = process.env;
@@ -23,11 +18,12 @@ describe("requestAlive", () => {
   });
 
   test("alive: true", async () => {
-    mockProbe.mockReturnValueOnce(Promise.resolve({ alive: true }));
+    // eslint-disable-next-line jest/unbound-method
+    const mockProbe = ping.promise.probe as jest.Mock;
+    mockProbe.mockResolvedValueOnce({ alive: true });
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
-    const { requestAlive } = await import("@/service/alive");
     const { lastAlive, close } = await requestAlive(config);
     close();
 
@@ -36,11 +32,12 @@ describe("requestAlive", () => {
   });
 
   test("alive: false", async () => {
-    mockProbe.mockReturnValueOnce(Promise.resolve({ alive: false }));
+    // eslint-disable-next-line jest/unbound-method
+    const mockProbe = ping.promise.probe as jest.Mock;
+    mockProbe.mockResolvedValueOnce({ alive: false });
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
-    const { requestAlive } = await import("@/service/alive");
     const { lastAlive, close } = await requestAlive(config);
     close();
 
@@ -49,11 +46,12 @@ describe("requestAlive", () => {
   });
 
   test("throw error", async () => {
-    mockProbe.mockReturnValue(Promise.reject(new Error()));
+    // eslint-disable-next-line jest/unbound-method
+    const mockProbe = ping.promise.probe as jest.Mock;
+    mockProbe.mockRejectedValueOnce(new Error());
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
-    const { requestAlive } = await import("@/service/alive");
     const { lastAlive, close } = await requestAlive(config);
     close();
 
@@ -62,19 +60,18 @@ describe("requestAlive", () => {
   });
 
   test("listener", async () => {
-    process.env.CHECK_ALIVE_INTERVAL = "300";
-
+    // eslint-disable-next-line jest/unbound-method
+    const mockProbe = ping.promise.probe as jest.Mock;
     mockProbe
-      .mockReturnValueOnce({ alive: true })
-      .mockReturnValueOnce({ alive: false });
+      .mockResolvedValueOnce({ alive: true })
+      .mockResolvedValueOnce({ alive: false });
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
-    const { requestAlive } = await import("@/service/alive");
     const alive = await requestAlive(config);
     const mockListener = jest.fn();
     alive.addListener(mockListener);
-    await setTimeout(400);
+    await setTimeout(300);
     alive.close();
 
     expect(mockProbe).toHaveBeenCalledTimes(2);

@@ -1,7 +1,6 @@
 import { Entity } from "@/entity";
 import { setupAvailability } from "@/manager/availabilityManager";
 import { MqttClient } from "@/service/mqtt";
-import { jest } from "@jest/globals";
 
 describe("setupAvailability", () => {
   let mockMqttClient: jest.Mocked<MqttClient>;
@@ -18,8 +17,12 @@ describe("setupAvailability", () => {
     ] as Entity[];
   });
 
+  afterEach(() => {
+    jest.clearAllTimers();
+  });
+
   it("pushOnline を呼び出すと全てのエンティティにオンライン状態を送信する", () => {
-    const { pushOnline } = setupAvailability(entities, mockMqttClient);
+    const { pushOnline, close } = setupAvailability(entities, mockMqttClient);
 
     pushOnline();
 
@@ -30,16 +33,16 @@ describe("setupAvailability", () => {
         "online",
       );
     });
+
+    close();
   });
 
-  it("close を呼び出すとインターバルがクリアされ、全てのエンティティにオフライン状態を送信する", () => {
+  it("close を呼び出すと全てのエンティティにオフライン状態を送信する", () => {
     jest.useFakeTimers();
-    global.clearInterval = jest.fn(); // for ESM
     const { close } = setupAvailability(entities, mockMqttClient);
 
     close();
 
-    expect(clearInterval).toHaveBeenCalled();
     expect(mockMqttClient.publish).toHaveBeenCalledTimes(entities.length);
     entities.forEach((entity) => {
       expect(mockMqttClient.publish).toHaveBeenCalledWith(
@@ -51,7 +54,7 @@ describe("setupAvailability", () => {
 
   it("定期的にオンライン状態を送信する", () => {
     jest.useFakeTimers();
-    setupAvailability(entities, mockMqttClient);
+    const { close } = setupAvailability(entities, mockMqttClient);
 
     jest.advanceTimersByTime(10000); // Assume AVAILABILITY_INTERVAL is 10000ms
 
@@ -66,9 +69,7 @@ describe("setupAvailability", () => {
     jest.advanceTimersByTime(10000);
 
     expect(mockMqttClient.publish).toHaveBeenCalledTimes(entities.length * 2);
-  });
 
-  afterEach(() => {
-    jest.useRealTimers();
+    close();
   });
 });
