@@ -31,7 +31,7 @@ export async function suspend(config: RemoteConfig): Promise<void> {
   const homeDir = process.env.HOME ?? process.env.HOMEPATH;
   const host = config.ipAddress;
   const privateKeyPath =
-    homeDir && !config.ssh.password
+    homeDir && !config.ssh.password && !config.ssh.privateKeyPath
       ? path.join(homeDir, ".ssh", "id_rsa")
       : undefined;
 

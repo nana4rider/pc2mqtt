@@ -60,6 +60,24 @@ describe("getSuspendCommand", () => {
     );
   });
 
+  test("パスワードが設定されている時はprivateKeyPathを補完しない", async () => {
+    process.env.HOME = "path/to/home";
+
+    const { suspend } = await import("@/service/suspend");
+    await suspend({
+      ipAddress: "192.168.1.1",
+      ssh: {
+        password: "password",
+      },
+    } as RemoteConfig);
+
+    expect(mockConnect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        privateKeyPath: undefined,
+      }),
+    );
+  });
+
   test("Linux OS", async () => {
     mockExecCommand.mockReturnValueOnce({ stdout: "Linux" });
 
@@ -99,9 +117,7 @@ describe("getSuspendCommand", () => {
   });
 
   test("接続に失敗してもエラーにしない", async () => {
-    mockConnect.mockImplementationOnce(() => {
-      throw new Error();
-    });
+    mockExecCommand.mockReturnValue(Promise.reject(new Error()));
     mockExecCommand.mockReturnValueOnce({ stdout: "" });
 
     const { suspend } = await import("@/service/suspend");
@@ -115,9 +131,7 @@ describe("getSuspendCommand", () => {
 
   test("コマンド実行に失敗してもエラーにしない", async () => {
     mockExecCommand.mockReturnValueOnce({ stdout: "" });
-    mockExecCommand.mockImplementationOnce(() => {
-      throw new Error();
-    });
+    mockExecCommand.mockReturnValue(Promise.reject(new Error()));
 
     const { suspend } = await import("@/service/suspend");
     const actual = suspend({
