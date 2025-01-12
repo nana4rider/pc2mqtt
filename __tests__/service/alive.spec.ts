@@ -15,17 +15,20 @@ jest.unstable_mockModule("ping", () => {
 });
 
 describe("requestAlive", () => {
+  const env = process.env;
   beforeEach(() => {
-    jest.resetAllMocks();
+    jest.resetModules();
+    jest.clearAllMocks();
+    process.env = { ...env };
   });
 
   test("alive: true", async () => {
-    mockProbe.mockReturnValueOnce({ alive: true });
+    mockProbe.mockReturnValueOnce(Promise.resolve({ alive: true }));
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
     const { requestAlive } = await import("@/service/alive");
-    const { lastAlive, close } = await requestAlive(config, 100000);
+    const { lastAlive, close } = await requestAlive(config);
     close();
 
     expect(mockProbe).toHaveBeenCalledWith("192.168.1.1", { timeout: 1 });
@@ -33,12 +36,12 @@ describe("requestAlive", () => {
   });
 
   test("alive: false", async () => {
-    mockProbe.mockReturnValueOnce({ alive: false });
+    mockProbe.mockReturnValueOnce(Promise.resolve({ alive: false }));
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
     const { requestAlive } = await import("@/service/alive");
-    const { lastAlive, close } = await requestAlive(config, 100000);
+    const { lastAlive, close } = await requestAlive(config);
     close();
 
     expect(mockProbe).toHaveBeenCalledWith("192.168.1.1", { timeout: 1 });
@@ -46,14 +49,12 @@ describe("requestAlive", () => {
   });
 
   test("throw error", async () => {
-    mockProbe.mockImplementationOnce(() => {
-      throw new Error();
-    });
+    mockProbe.mockReturnValue(Promise.reject(new Error()));
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
     const { requestAlive } = await import("@/service/alive");
-    const { lastAlive, close } = await requestAlive(config, 100000);
+    const { lastAlive, close } = await requestAlive(config);
     close();
 
     expect(mockProbe).toHaveBeenCalledWith("192.168.1.1", { timeout: 1 });
@@ -61,6 +62,8 @@ describe("requestAlive", () => {
   });
 
   test("listener", async () => {
+    process.env.CHECK_ALIVE_INTERVAL = "300";
+
     mockProbe
       .mockReturnValueOnce({ alive: true })
       .mockReturnValueOnce({ alive: false });
@@ -68,7 +71,7 @@ describe("requestAlive", () => {
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
     const { requestAlive } = await import("@/service/alive");
-    const alive = await requestAlive(config, 300);
+    const alive = await requestAlive(config);
     const mockListener = jest.fn();
     alive.addListener(mockListener);
     await setTimeout(400);
