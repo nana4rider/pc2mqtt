@@ -1,4 +1,5 @@
 import { Entity } from "@/entity";
+import env from "@/env";
 import {
   buildDevice,
   buildEntity,
@@ -10,17 +11,6 @@ import { Alive } from "@/service/alive";
 import initializeMqttClient from "@/service/mqtt";
 import { startup } from "@/service/startup";
 import { suspend } from "@/service/suspend";
-import env from "env-var";
-
-const HA_DISCOVERY_PREFIX = env
-  .get("HA_DISCOVERY_PREFIX")
-  .default("homeassistant")
-  .asString();
-// ON/OFF切り替え後、状態の更新を止める時間
-const STATE_CHANGE_PAUSE_DURATION = env
-  .get("STATE_CHANGE_PAUSE_DURATION")
-  .default(30000)
-  .asInt();
 
 export default async function setupMqttDeviceManager(
   deviceId: string,
@@ -71,7 +61,7 @@ export default async function setupMqttDeviceManager(
       // ON/OFFがすぐに反映されないので、一定時間状態の変更を通知しない
       if (
         !lastStateChangeTime ||
-        Date.now() - lastStateChangeTime > STATE_CHANGE_PAUSE_DURATION
+        Date.now() - lastStateChangeTime > env.STATE_CHANGE_PAUSE_DURATION
       ) {
         void publishState(isAlive);
       }
@@ -85,7 +75,7 @@ export default async function setupMqttDeviceManager(
       ...origin,
     };
     mqtt.publish(
-      `${HA_DISCOVERY_PREFIX}/switch/${discoveryMessage.unique_id}/config`,
+      `${env.HA_DISCOVERY_PREFIX}/switch/${discoveryMessage.unique_id}/config`,
       JSON.stringify(discoveryMessage),
       { qos: 1, retain: true },
     );

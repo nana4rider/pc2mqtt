@@ -1,6 +1,6 @@
 {
   "name": "pc2mqtt",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "main": "dist/index.js",
   "type": "module",
   "homepage": "https://github.com/nana4rider/pc2mqtt",
@@ -16,7 +16,7 @@
   "author": "nana4rider",
   "license": "ISC",
   "dependencies": {
-    "env-var": "^7.5.0",
+    "envalid": "^8.0.0",
     "ip": "^2.0.1",
     "mqtt": "^5.10.3",
     "node-ssh": "^13.2.0",
@@ -33,6 +33,7 @@
     "@types/ping": "^0.4.4",
     "@types/ssh2": "^1.15.1",
     "@types/wol": "^1.0.4",
+    "dotenv": "^16.4.7",
     "esbuild-plugin-alias": "^0.2.1",
     "eslint": "^9.17.0",
     "eslint-plugin-jest": "^28.10.0",

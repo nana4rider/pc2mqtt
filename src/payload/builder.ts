@@ -1,6 +1,6 @@
 import { Entity } from "@/entity";
+import env from "@/env";
 import { getTopic, TopicType } from "@/payload/topic";
-import env from "env-var";
 import { readFile } from "fs/promises";
 import type { JsonObject, PackageJson } from "type-fest";
 
@@ -12,8 +12,6 @@ export const StatusMessage = {
 } as const;
 type StatusMessage = (typeof StatusMessage)[keyof typeof StatusMessage];
 
-const QOS = env.get("QOS").default(1).asIntPositive();
-
 export function buildEntity(deviceId: string, entity: Entity) {
   return {
     unique_id: `pc2mqtt_${deviceId}_${entity.id}`,
@@ -22,7 +20,7 @@ export function buildEntity(deviceId: string, entity: Entity) {
     state_topic: getTopic(entity, TopicType.STATE),
     availability_topic: getTopic(entity, TopicType.AVAILABILITY),
     optimistic: true,
-    qos: QOS,
+    qos: env.ENTITY_QOS,
   } as const;
 }
 

@@ -60,8 +60,7 @@ describe("requestAlive", () => {
   });
 
   test("listener", async () => {
-    // eslint-disable-next-line jest/unbound-method
-    const mockProbe = ping.promise.probe as jest.Mock;
+    const mockProbe: jest.SpyInstance = jest.spyOn(ping.promise, "probe");
     mockProbe
       .mockResolvedValueOnce({ alive: true })
       .mockResolvedValueOnce({ alive: false });
