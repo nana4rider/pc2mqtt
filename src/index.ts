@@ -29,7 +29,7 @@ async function main() {
   const http = await initializeHttpServer();
   const availability = setupAvailability(entities, mqtt);
 
-  const shutdownHandler = async () => {
+  const handleShutdown = async () => {
     logger.info("shutdown");
     alives.forEach((alive) => alive.close());
     availability.close();
@@ -38,8 +38,8 @@ async function main() {
     process.exit(0);
   };
 
-  process.on("SIGINT", () => void shutdownHandler());
-  process.on("SIGTERM", () => void shutdownHandler());
+  process.on("SIGINT", () => void handleShutdown());
+  process.on("SIGTERM", () => void handleShutdown());
 
   availability.pushOnline();
 
