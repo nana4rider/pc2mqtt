@@ -24,7 +24,7 @@ export default async function setupMqttDeviceManager(
   // 受信して状態を変更
   const handleMessage = async (topic: string, message: string) => {
     const entity = entities.find(
-      (entity) => getTopic(entity, TopicType.COMMAND) === topic,
+      (entity) => getTopic(deviceId, entity, TopicType.COMMAND) === topic,
     );
     if (!entity) return;
 
@@ -41,7 +41,7 @@ export default async function setupMqttDeviceManager(
   };
 
   const subscribeTopics = entities.map((entity) =>
-    getTopic(entity, TopicType.COMMAND),
+    getTopic(deviceId, entity, TopicType.COMMAND),
   );
 
   const mqtt = await initializeMqttClient(subscribeTopics, handleMessage);
@@ -49,7 +49,7 @@ export default async function setupMqttDeviceManager(
   entities.forEach((entity) => {
     const publishState = (value: boolean) =>
       mqtt.publish(
-        getTopic(entity, TopicType.STATE),
+        getTopic(deviceId, entity, TopicType.STATE),
         value ? StatusMessage.ON : StatusMessage.OFF,
         // 定期的に状態を送信するのでretainは付与しない
         { retain: false },

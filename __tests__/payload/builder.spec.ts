@@ -15,15 +15,15 @@ describe("buildEntity", () => {
     expect(entity).toHaveProperty("name", "Test Entity");
     expect(entity).toHaveProperty(
       "command_topic",
-      `pc2mqtt/entity1/${TopicType.COMMAND}`,
+      `pc2mqtt/deviceId1/entity1/${TopicType.COMMAND}`,
     );
     expect(entity).toHaveProperty(
       "state_topic",
-      `pc2mqtt/entity1/${TopicType.STATE}`,
+      `pc2mqtt/deviceId1/entity1/${TopicType.STATE}`,
     );
     expect(entity).toHaveProperty(
       "availability_topic",
-      `pc2mqtt/entity1/${TopicType.AVAILABILITY}`,
+      `pc2mqtt/deviceId1/entity1/${TopicType.AVAILABILITY}`,
     );
     expect(entity).toHaveProperty("optimistic", true);
     expect(entity).toHaveProperty("qos");

@@ -3,10 +3,14 @@ import env from "@/env";
 import { getTopic, TopicType } from "@/payload/topic";
 import { MqttClient } from "@/service/mqtt";
 
-export function setupAvailability(entities: Entity[], mqtt: MqttClient) {
+export function setupAvailability(
+  deviceId: string,
+  entities: Entity[],
+  mqtt: MqttClient,
+) {
   const pushAvailability = (value: string) => {
     entities.forEach((entity) =>
-      mqtt.publish(getTopic(entity, TopicType.AVAILABILITY), value),
+      mqtt.publish(getTopic(deviceId, entity, TopicType.AVAILABILITY), value),
     );
   };
 

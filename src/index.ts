@@ -27,7 +27,7 @@ async function main() {
   );
   const mqtt = await setupMqttDeviceManager(deviceId, entities, alives);
   const http = await initializeHttpServer();
-  const availability = setupAvailability(entities, mqtt);
+  const availability = setupAvailability(deviceId, entities, mqtt);
 
   const handleShutdown = async () => {
     logger.info("shutdown");

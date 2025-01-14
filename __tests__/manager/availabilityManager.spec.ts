@@ -3,6 +3,7 @@ import { setupAvailability } from "@/manager/availabilityManager";
 import { MqttClient } from "@/service/mqtt";
 
 describe("setupAvailability", () => {
+  const deviceId = "deviceId1";
   let mockMqttClient: jest.Mocked<MqttClient>;
   let entities: Entity[];
 
@@ -22,7 +23,11 @@ describe("setupAvailability", () => {
   });
 
   it("pushOnline を呼び出すと全てのエンティティにオンライン状態を送信する", () => {
-    const { pushOnline, close } = setupAvailability(entities, mockMqttClient);
+    const { pushOnline, close } = setupAvailability(
+      deviceId,
+      entities,
+      mockMqttClient,
+    );
 
     pushOnline();
 
@@ -39,7 +44,7 @@ describe("setupAvailability", () => {
 
   it("close を呼び出すと全てのエンティティにオフライン状態を送信する", () => {
     jest.useFakeTimers();
-    const { close } = setupAvailability(entities, mockMqttClient);
+    const { close } = setupAvailability(deviceId, entities, mockMqttClient);
 
     close();
 
@@ -54,7 +59,7 @@ describe("setupAvailability", () => {
 
   it("定期的にオンライン状態を送信する", () => {
     jest.useFakeTimers();
-    const { close } = setupAvailability(entities, mockMqttClient);
+    const { close } = setupAvailability(deviceId, entities, mockMqttClient);
 
     jest.advanceTimersByTime(10000); // Assume AVAILABILITY_INTERVAL is 10000ms
 
