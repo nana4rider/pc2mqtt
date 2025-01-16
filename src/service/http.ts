@@ -11,7 +11,7 @@ export default async function initializeHttpServer() {
     timestamp: Date.now(),
   }));
 
-  await server.listen({ port: env.PORT });
+  await server.listen({ host: "0.0.0.0", port: env.PORT });
   logger.info(`[HTTP] listen port: ${env.PORT}`);
 
   return server;
