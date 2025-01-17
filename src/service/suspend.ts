@@ -25,7 +25,7 @@ async function getSuspendCommand(sshClient: NodeSSH): Promise<SuspendCommand> {
   }
 }
 
-export async function suspend(config: RemoteConfig): Promise<void> {
+export default async function suspend(config: RemoteConfig): Promise<void> {
   const sshClient = new NodeSSH();
 
   const homeDir = process.env.HOME ?? process.env.HOMEPATH;

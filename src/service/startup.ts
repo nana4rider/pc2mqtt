@@ -23,7 +23,7 @@ function getDefaultSubnetMask(ipAddress: string) {
   return ip.fromPrefixLen(prefixLength);
 }
 
-export async function startup(config: RemoteConfig) {
+export default async function startup(config: RemoteConfig) {
   const subnetMask =
     config.subnetMask ?? getDefaultSubnetMask(config.ipAddress);
   const address = ip.subnet(config.ipAddress, subnetMask).broadcastAddress;

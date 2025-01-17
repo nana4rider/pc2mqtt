@@ -9,8 +9,8 @@ import {
 import { getTopic, TopicType } from "@/payload/topic";
 import { Alive } from "@/service/alive";
 import initializeMqttClient from "@/service/mqtt";
-import { startup } from "@/service/startup";
-import { suspend } from "@/service/suspend";
+import startup from "@/service/startup";
+import suspend from "@/service/suspend";
 
 export default async function setupMqttDeviceManager(
   deviceId: string,

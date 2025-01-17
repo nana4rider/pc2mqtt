@@ -1,5 +1,5 @@
 import { RemoteConfig } from "@/entity";
-import { startup } from "@/service/startup";
+import startup from "@/service/startup";
 import wol from "wol";
 
 jest.mock("wol", () => ({
@@ -25,7 +25,6 @@ describe("startup", () => {
   });
 
   test("クラス A アドレスでデフォルトのサブネットマスクを計算する", async () => {
-    const { startup } = await import("@/service/startup");
     await startup({
       ipAddress: "10.0.0.1",
       macAddress: "00:11:22:33:44:55",
@@ -37,7 +36,6 @@ describe("startup", () => {
   });
 
   test("クラス B アドレスでデフォルトのサブネットマスクを計算する", async () => {
-    const { startup } = await import("@/service/startup");
     await startup({
       ipAddress: "172.16.0.1",
       macAddress: "00:11:22:33:44:55",
@@ -49,7 +47,6 @@ describe("startup", () => {
   });
 
   test("クラス C アドレスでデフォルトのサブネットマスクを計算する", async () => {
-    const { startup } = await import("@/service/startup");
     await startup({
       ipAddress: "192.168.1.1",
       macAddress: "00:11:22:33:44:55",
@@ -61,8 +58,6 @@ describe("startup", () => {
   });
 
   test("IP アドレスが IPv4 形式でない場合、エラーをスローする", async () => {
-    const { startup } = await import("@/service/startup");
-
     await expect(
       startup({
         ipAddress: "invalid-ip",
@@ -74,8 +69,6 @@ describe("startup", () => {
   });
 
   test("IP アドレスがクラス A, B, C でない場合、エラーをスローする", async () => {
-    const { startup } = await import("@/service/startup");
-
     await expect(
       startup({
         ipAddress: "240.0.0.1",

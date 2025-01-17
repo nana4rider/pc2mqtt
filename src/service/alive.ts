@@ -9,7 +9,9 @@ export type Alive = {
   close: () => void;
 };
 
-export async function requestAlive(config: RemoteConfig): Promise<Alive> {
+export default async function requestAlive(
+  config: RemoteConfig,
+): Promise<Alive> {
   const getAlive = async (): Promise<boolean> => {
     try {
       const { alive } = await ping.promise.probe(config.ipAddress, {

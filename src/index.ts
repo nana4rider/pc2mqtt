@@ -2,7 +2,7 @@ import { Entity } from "@/entity";
 import logger from "@/logger";
 import { setupAvailability } from "@/manager/availabilityManager";
 import setupMqttDeviceManager from "@/manager/mqttDeviceManager";
-import { requestAlive } from "@/service/alive";
+import requestAlive from "@/service/alive";
 import initializeHttpServer from "@/service/http";
 import fs from "fs/promises";
 

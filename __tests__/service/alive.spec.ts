@@ -1,5 +1,5 @@
 import { RemoteConfig } from "@/entity";
-import { requestAlive } from "@/service/alive";
+import requestAlive from "@/service/alive";
 import ping from "ping";
 import { setTimeout } from "timers/promises";
 

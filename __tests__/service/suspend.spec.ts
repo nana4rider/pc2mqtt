@@ -1,5 +1,5 @@
 import { RemoteConfig } from "@/entity";
-import { suspend } from "@/service/suspend";
+import suspend from "@/service/suspend";
 import path from "path";
 
 const mockConnect = jest.fn();
