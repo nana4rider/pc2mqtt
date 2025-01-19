@@ -17,7 +17,7 @@ export default async function setupMqttDeviceManager(
   entities: Entity[],
   alives: Map<string, Alive>,
 ) {
-  const origin = await buildOrigin();
+  const origin = buildOrigin();
   const device = buildDevice(deviceId);
   const lastStateChangeTimes = new Map<string, number>();
 
