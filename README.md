@@ -16,8 +16,11 @@
 
 ## 使い方
 
-```sh
-cat config.json
+必要な環境変数については[こちら](https://github.com/nana4rider/pc2mqtt/blob/main/src/env.ts)をご確認ください。
+
+`config.json` に機器情報を設定
+
+```json
 {
   "deviceId": "string",
   "entities": [
@@ -35,12 +38,32 @@ cat config.json
     }
   ]
 }
+```
 
+### Production
+
+```sh
 npm install
 npm run build
-
-export MQTT_BROKER="mqtt://localhost"
-export MQTT_USERNAME="username"
-export MQTT_PASSWORD="password"
 node dist/index
+```
+
+### Development
+
+```sh
+npm install
+npm run dev
+```
+
+### Docker
+
+```sh
+docker run -d \
+  --name pc2mqtt \
+  -e MQTT_BROKER=mqtt://localhost \
+  -e MQTT_USERNAME=username \
+  -e MQTT_PASSWORD=password \
+  -p 3000:3000 \
+  --restart always \
+  nana4rider/pc2mqtt:latest
 ```
