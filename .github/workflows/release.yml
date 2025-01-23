@@ -18,6 +18,8 @@ jobs:
       tag_exists: ${{ steps.tag_check.outputs.exists }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
 
       - id: version
         run: |
@@ -27,10 +29,8 @@ jobs:
       - id: tag_check
         run: |
           if git rev-parse "v${{ steps.version.outputs.current_version }}" >/dev/null 2>&1; then
-            echo "exists=false"
             echo "exists=false" >> $GITHUB_OUTPUT
           else
-            echo "exists=true"
             echo "exists=true" >> $GITHUB_OUTPUT
           fi
 
