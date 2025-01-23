@@ -1,6 +1,6 @@
 {
   "name": "pc2mqtt",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "main": "dist/index.js",
   "type": "module",
   "homepage": "https://github.com/nana4rider/pc2mqtt",
