@@ -63,7 +63,10 @@ docker run -d \
   -e MQTT_BROKER=mqtt://localhost \
   -e MQTT_USERNAME=username \
   -e MQTT_PASSWORD=password \
-  -p 3000:3000 \
   --restart always \
+  --net=host \
   nana4rider/pc2mqtt:latest
 ```
+
+> [!TIP]  
+> WoLパケットをブロードキャストに飛ばす都合上、`host`ネットワーク・モードの利用が必須になります。
