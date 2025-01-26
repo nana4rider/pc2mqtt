@@ -16,7 +16,7 @@
 
 ## 使い方
 
-必要な環境変数については[こちら](https://github.com/nana4rider/pc2mqtt/blob/main/src/env.ts)をご確認ください。
+### 設定ファイルの作成
 
 `config.json` に機器情報を設定
 
@@ -40,19 +40,13 @@
 }
 ```
 
-### Production
+### Native
 
 ```sh
+export MQTT_BROKER=mqtt://localhost
 npm install
 npm run build
-node dist/index
-```
-
-### Development
-
-```sh
-npm install
-npm run dev
+npm start
 ```
 
 ### Docker
@@ -61,12 +55,12 @@ npm run dev
 docker run -d \
   --name pc2mqtt \
   -e MQTT_BROKER=mqtt://localhost \
-  -e MQTT_USERNAME=username \
-  -e MQTT_PASSWORD=password \
   --restart always \
   --net=host \
   nana4rider/pc2mqtt:latest
 ```
 
 > [!TIP]  
-> WoLパケットをブロードキャストに飛ばす都合上、`host`ネットワーク・モードの利用が必須になります。
+> その他、必要な環境変数については[こちら](src/env.ts)をご確認ください。
+>
+> WoLパケットをブロードキャストに送信する都合上、[ `host` ネットワーク・モード](https://docs.docker.jp/network/host.html)の利用が必須になります。
