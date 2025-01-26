@@ -62,4 +62,4 @@ docker run -d \
 > [!TIP]  
 > 必要な環境変数については[こちら](src/env.ts)をご確認ください。
 >
-> WoLパケットをブロードキャストに送信する都合上、[ `host` ネットワーク・モード](https://docs.docker.jp/network/host.html)の利用が必須になります。
+> WoLパケットをブロードキャストに送信する都合上、 [`host` ネットワーク・モード](https://docs.docker.jp/network/host.html)の利用が必須になります。
