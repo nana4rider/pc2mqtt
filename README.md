@@ -43,10 +43,9 @@
 ### Native
 
 ```sh
-export MQTT_BROKER=mqtt://localhost
 npm install
 npm run build
-npm start
+node --env-file=.env dist/index
 ```
 
 ### Docker
@@ -54,13 +53,13 @@ npm start
 ```sh
 docker run -d \
   --name pc2mqtt \
-  -e MQTT_BROKER=mqtt://localhost \
+  --env-file .env \
   --restart always \
   --net=host \
   nana4rider/pc2mqtt:latest
 ```
 
 > [!TIP]  
-> その他、必要な環境変数については[こちら](src/env.ts)をご確認ください。
+> 必要な環境変数については[こちら](src/env.ts)をご確認ください。
 >
 > WoLパケットをブロードキャストに送信する都合上、[ `host` ネットワーク・モード](https://docs.docker.jp/network/host.html)の利用が必須になります。
