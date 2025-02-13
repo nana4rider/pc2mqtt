@@ -10,8 +10,8 @@ import {
 } from "@/payload/builder";
 import { Alive } from "@/service/alive";
 import initializeMqttClient from "@/service/mqtt";
+import shutdown from "@/service/shutdown";
 import startup from "@/service/startup";
-import suspend from "@/service/suspend";
 
 jest.mock("@/payload/builder", () => {
   const actual = jest.requireActual<typeof builder>("@/payload/builder");
@@ -28,7 +28,7 @@ jest.mock("@/service/startup", () => ({
   default: jest.fn(),
 }));
 
-jest.mock("@/service/suspend", () => ({
+jest.mock("@/service/shutdown", () => ({
   __esModule: true,
   default: jest.fn(),
 }));
@@ -130,7 +130,7 @@ describe("setupMqttDeviceManager", () => {
     const handleMessage = mockInitializeMqttClient.mock.calls[0][1];
     await handleMessage("pc2mqtt/device-id/entity1/set", StatusMessage.OFF);
 
-    expect(suspend).toHaveBeenCalled();
+    expect(shutdown).toHaveBeenCalled();
   });
 
   test("未登録のトピックにメッセージが来た場合、無視する", async () => {
@@ -152,7 +152,7 @@ describe("setupMqttDeviceManager", () => {
     );
 
     expect(startup).not.toHaveBeenCalled();
-    expect(suspend).not.toHaveBeenCalled();
+    expect(shutdown).not.toHaveBeenCalled();
   });
 
   test("Home Assistantにデバイス情報が送信される", async () => {

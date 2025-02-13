@@ -1,5 +1,5 @@
 import { RemoteConfig } from "@/entity";
-import suspend from "@/service/suspend";
+import shutdown from "@/service/shutdown";
 import path from "path";
 
 const mockConnect = jest.fn();
@@ -15,7 +15,7 @@ jest.mock("node-ssh", () => ({
   },
 }));
 
-describe("getSuspendCommand", () => {
+describe("getShutdownCommand", () => {
   const env = process.env;
   beforeEach(() => {
     jest.resetModules();
@@ -28,7 +28,7 @@ describe("getSuspendCommand", () => {
     delete process.env.HOME;
     process.env.HOMEPATH = homePath;
 
-    await suspend({
+    await shutdown({
       ipAddress: "192.168.1.1",
       ssh: {},
     } as RemoteConfig);
@@ -45,7 +45,7 @@ describe("getSuspendCommand", () => {
     process.env.HOME = homePath;
     delete process.env.HOMEPATH;
 
-    await suspend({
+    await shutdown({
       ipAddress: "192.168.1.1",
       ssh: {},
     } as RemoteConfig);
@@ -60,7 +60,7 @@ describe("getSuspendCommand", () => {
   test("パスワードが設定されている時はprivateKeyPathを補完しない", async () => {
     process.env.HOME = "path/to/home";
 
-    await suspend({
+    await shutdown({
       ipAddress: "192.168.1.1",
       ssh: {
         password: "password",
@@ -77,18 +77,18 @@ describe("getSuspendCommand", () => {
   test("Linux OS", async () => {
     mockExecCommand.mockReturnValueOnce({ stdout: "Linux" });
 
-    await suspend({
+    await shutdown({
       ipAddress: "192.168.1.1",
       ssh: {},
     } as RemoteConfig);
 
-    expect(mockExecCommand).toHaveBeenCalledWith("sudo systemctl suspend");
+    expect(mockExecCommand).toHaveBeenCalledWith("sudo shutdown now");
   });
 
   test("Mac OS", async () => {
     mockExecCommand.mockReturnValueOnce({ stdout: "Darwin" });
 
-    await suspend({
+    await shutdown({
       ipAddress: "192.168.1.1",
       ssh: {},
     } as RemoteConfig);
@@ -99,21 +99,19 @@ describe("getSuspendCommand", () => {
   test("Windows OS", async () => {
     mockExecCommand.mockReturnValueOnce({ stdout: "" });
 
-    await suspend({
+    await shutdown({
       ipAddress: "192.168.1.1",
       ssh: {},
     } as RemoteConfig);
 
-    expect(mockExecCommand).toHaveBeenCalledWith(
-      "rundll32.exe powrprof.dll,SetSuspendState 0,1,0",
-    );
+    expect(mockExecCommand).toHaveBeenCalledWith("shutdown /s /t 0");
   });
 
   test("接続に失敗してもエラーにしない", async () => {
     mockExecCommand.mockReturnValue(Promise.reject(new Error()));
     mockExecCommand.mockReturnValueOnce({ stdout: "" });
 
-    const actual = suspend({
+    const actual = shutdown({
       ipAddress: "192.168.1.1",
       ssh: {},
     } as RemoteConfig);
@@ -125,7 +123,7 @@ describe("getSuspendCommand", () => {
     mockExecCommand.mockReturnValueOnce({ stdout: "" });
     mockExecCommand.mockReturnValue(Promise.reject(new Error()));
 
-    const actual = suspend({
+    const actual = shutdown({
       ipAddress: "192.168.1.1",
       ssh: {},
     } as RemoteConfig);

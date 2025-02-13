@@ -1,6 +1,6 @@
 {
   "name": "pc2mqtt",
-  "version": "1.4.6",
+  "version": "1.5.0",
   "author": "nana4rider",
   "license": "ISC",
   "main": "dist/index.js",

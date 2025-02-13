@@ -9,8 +9,8 @@ import {
 import { getTopic, TopicType } from "@/payload/topic";
 import { Alive } from "@/service/alive";
 import initializeMqttClient from "@/service/mqtt";
+import shutdown from "@/service/shutdown";
 import startup from "@/service/startup";
-import suspend from "@/service/suspend";
 
 export default async function setupMqttDeviceManager(
   deviceId: string,
@@ -36,7 +36,7 @@ export default async function setupMqttDeviceManager(
       await startup(entity.remote);
     } else if (message === StatusMessage.OFF && lastAlive) {
       lastStateChangeTimes.set(entity.id, now);
-      await suspend(entity.remote);
+      await shutdown(entity.remote);
     }
   };
 

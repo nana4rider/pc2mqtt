@@ -5,27 +5,29 @@ import path from "path";
 
 const DEFAULT_TIMEOUT = 3000;
 
-const SuspendCommand = {
-  WINDOWS: "rundll32.exe powrprof.dll,SetSuspendState 0,1,0",
-  LINUX: "sudo systemctl suspend",
+const ShutdownCommand = {
+  WINDOWS: "shutdown /s /t 0",
+  LINUX: "sudo shutdown now",
   MAC: "sudo pmset sleepnow",
 } as const;
-type SuspendCommand = (typeof SuspendCommand)[keyof typeof SuspendCommand];
+type ShutdownCommand = (typeof ShutdownCommand)[keyof typeof ShutdownCommand];
 
-async function getSuspendCommand(sshClient: NodeSSH): Promise<SuspendCommand> {
+async function getShutdownCommand(
+  sshClient: NodeSSH,
+): Promise<ShutdownCommand> {
   const { stdout: uname } = await sshClient.execCommand("uname");
 
   switch (uname) {
     case "Linux":
-      return SuspendCommand.LINUX;
+      return ShutdownCommand.LINUX;
     case "Darwin":
-      return SuspendCommand.MAC;
+      return ShutdownCommand.MAC;
     default:
-      return SuspendCommand.WINDOWS;
+      return ShutdownCommand.WINDOWS;
   }
 }
 
-export default async function suspend(config: RemoteConfig): Promise<void> {
+export default async function shutdown(config: RemoteConfig): Promise<void> {
   const sshClient = new NodeSSH();
 
   const homeDir = process.env.HOME ?? process.env.HOMEPATH;
@@ -42,15 +44,15 @@ export default async function suspend(config: RemoteConfig): Promise<void> {
       privateKeyPath,
       ...config.ssh,
     });
-    const suspendCommand = await getSuspendCommand(sshClient);
+    const ShutdownCommand = await getShutdownCommand(sshClient);
     try {
-      await sshClient.execCommand(suspendCommand);
+      await sshClient.execCommand(ShutdownCommand);
     } catch (err) {
       // Timed out while waiting for handshake
       logger.silly(err);
     }
   } catch (err) {
-    logger.error("Error executing suspend command:", err);
+    logger.error("Error executing shutdown command:", err);
   } finally {
     sshClient.dispose();
   }
