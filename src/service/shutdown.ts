@@ -34,7 +34,7 @@ export default async function shutdown(config: RemoteConfig): Promise<void> {
   const host = config.ipAddress;
   const privateKeyPath =
     homeDir && !config.ssh.password && !config.ssh.privateKeyPath
-      ? path.join(homeDir, ".ssh", "id_rsa")
+      ? path.join(homeDir, ".ssh", "id_ed25519")
       : undefined;
 
   try {

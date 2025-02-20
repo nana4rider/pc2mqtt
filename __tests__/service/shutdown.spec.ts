@@ -23,7 +23,7 @@ describe("getShutdownCommand", () => {
     process.env = { ...env };
   });
 
-  test("Windows id_rsa", async () => {
+  test("Windows id_ed25519", async () => {
     const homePath = "path/to/home";
     delete process.env.HOME;
     process.env.HOMEPATH = homePath;
@@ -35,12 +35,12 @@ describe("getShutdownCommand", () => {
 
     expect(mockConnect).toHaveBeenCalledWith(
       expect.objectContaining({
-        privateKeyPath: path.join(homePath, ".ssh", "id_rsa"),
+        privateKeyPath: path.join(homePath, ".ssh", "id_ed25519"),
       }),
     );
   });
 
-  test("Linux id_rsa", async () => {
+  test("Linux id_ed25519", async () => {
     const homePath = "path/to/home";
     process.env.HOME = homePath;
     delete process.env.HOMEPATH;
@@ -52,7 +52,7 @@ describe("getShutdownCommand", () => {
 
     expect(mockConnect).toHaveBeenCalledWith(
       expect.objectContaining({
-        privateKeyPath: path.join(homePath, ".ssh", "id_rsa"),
+        privateKeyPath: path.join(homePath, ".ssh", "id_ed25519"),
       }),
     );
   });

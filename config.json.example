@@ -7,7 +7,7 @@
       "remote": {
         "ssh": {
           "username": "username",
-          "privateKeyPath": "/path/to/id_rsa"
+          "privateKeyPath": "/path/to/id_ed25519"
         },
         "macAddress": "192.168.1.10",
         "ipAddress": "ca:fe:ba:be:de:ad"
