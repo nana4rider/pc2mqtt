@@ -2,14 +2,16 @@ import { RemoteConfig } from "@/entity";
 import startup from "@/service/startup";
 import wol from "wol";
 
-jest.mock("wol", () => ({
-  wake: jest.fn(),
+vi.mock("wol", () => ({
+  default: {
+    wake: vi.fn(),
+  },
 }));
 
 describe("startup", () => {
   beforeEach(() => {
-    jest.resetAllMocks();
-    jest.clearAllMocks();
+    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   test("指定されたサブネットマスクを使用して wol.wake を呼び出す", async () => {

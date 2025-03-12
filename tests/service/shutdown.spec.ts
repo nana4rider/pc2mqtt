@@ -2,10 +2,10 @@ import { RemoteConfig } from "@/entity";
 import shutdown from "@/service/shutdown";
 import path from "path";
 
-const mockConnect = jest.fn();
-const mockExecCommand = jest.fn();
+const mockConnect = vi.fn();
+const mockExecCommand = vi.fn();
 
-jest.mock("node-ssh", () => ({
+vi.mock("node-ssh", () => ({
   NodeSSH: function () {
     return {
       connect: mockConnect,
@@ -18,8 +18,8 @@ jest.mock("node-ssh", () => ({
 describe("getShutdownCommand", () => {
   const env = process.env;
   beforeEach(() => {
-    jest.resetModules();
-    jest.clearAllMocks();
+    vi.resetModules();
+    vi.clearAllMocks();
     process.env = { ...env };
   });
 

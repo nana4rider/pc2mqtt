@@ -12,54 +12,48 @@ import { Alive } from "@/service/alive";
 import initializeMqttClient from "@/service/mqtt";
 import shutdown from "@/service/shutdown";
 import startup from "@/service/startup";
+import { Mock } from "vitest";
 
-jest.mock("@/payload/builder", () => {
-  const actual = jest.requireActual<typeof builder>("@/payload/builder");
+vi.mock("@/payload/builder", async () => {
+  const actual = await vi.importActual<typeof builder>("@/payload/builder");
   return {
     ...actual,
-    buildDevice: jest.fn(),
-    buildEntity: jest.fn(),
-    buildOrigin: jest.fn(),
+    buildDevice: vi.fn(),
+    buildEntity: vi.fn(),
+    buildOrigin: vi.fn(),
   };
 });
 
-jest.mock("@/service/startup", () => ({
-  __esModule: true,
-  default: jest.fn(),
+vi.mock("@/service/startup", () => ({
+  default: vi.fn(),
 }));
 
-jest.mock("@/service/shutdown", () => ({
-  __esModule: true,
-  default: jest.fn(),
+vi.mock("@/service/shutdown", () => ({
+  default: vi.fn(),
 }));
 
-jest.mock("@/service/mqtt", () => jest.fn());
+vi.mock("@/service/mqtt", () => ({
+  default: vi.fn(),
+}));
 
-const mockBuildOrigin = buildOrigin as jest.Mock<
-  ReturnType<typeof buildOrigin>,
-  Parameters<typeof buildOrigin>
->;
-const mockBuildDevice = buildDevice as jest.Mock<
-  ReturnType<typeof buildDevice>,
-  Parameters<typeof buildDevice>
->;
-const mockBuildEntity = buildEntity as jest.Mock<
-  ReturnType<typeof buildEntity>,
-  Parameters<typeof buildEntity>
->;
+const mockBuildOrigin = buildOrigin as Mock<typeof buildOrigin>;
+const mockBuildDevice = buildDevice as Mock<typeof buildDevice>;
+const mockBuildEntity = buildEntity as Mock<typeof buildEntity>;
 
-const mockPublish = jest.fn();
-const mockInitializeMqttClient = initializeMqttClient as jest.Mock<
-  ReturnType<typeof initializeMqttClient>,
-  Parameters<typeof initializeMqttClient>
+const mockPublish = vi.fn();
+const mockInitializeMqttClient = initializeMqttClient as Mock<
+  typeof initializeMqttClient
 >;
 
 beforeEach(() => {
-  jest.resetAllMocks();
+  vi.resetAllMocks();
 
   mockInitializeMqttClient.mockResolvedValue({
     publish: mockPublish,
-  } as unknown as ReturnType<typeof initializeMqttClient>);
+    taskQueueSize: 0,
+    addSubscribe: vi.fn(),
+    close: vi.fn(),
+  });
 });
 
 describe("setupMqttDeviceManager", () => {
@@ -67,14 +61,8 @@ describe("setupMqttDeviceManager", () => {
     const entities = [{ id: "entity1" }, { id: "entity2" }] as Entity[];
 
     const alives = new Map<string, Alive>([
-      [
-        "entity1",
-        { lastAlive: false, addListener: jest.fn(), close: jest.fn() },
-      ],
-      [
-        "entity2",
-        { lastAlive: true, addListener: jest.fn(), close: jest.fn() },
-      ],
+      ["entity1", { lastAlive: false, addListener: vi.fn(), close: vi.fn() }],
+      ["entity2", { lastAlive: true, addListener: vi.fn(), close: vi.fn() }],
     ]);
 
     mockBuildOrigin.mockReturnValue({ origin: "test-origin" });
@@ -93,10 +81,7 @@ describe("setupMqttDeviceManager", () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
     const alives = new Map<string, Alive>([
-      [
-        "entity1",
-        { lastAlive: false, addListener: jest.fn(), close: jest.fn() },
-      ],
+      ["entity1", { lastAlive: false, addListener: vi.fn(), close: vi.fn() }],
     ]);
 
     mockBuildOrigin.mockReturnValue({ origin: "test-origin" });
@@ -115,10 +100,7 @@ describe("setupMqttDeviceManager", () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
     const alives = new Map<string, Alive>([
-      [
-        "entity1",
-        { lastAlive: true, addListener: jest.fn(), close: jest.fn() },
-      ],
+      ["entity1", { lastAlive: true, addListener: vi.fn(), close: vi.fn() }],
     ]);
 
     mockBuildOrigin.mockReturnValue({ origin: "test-origin" });
@@ -137,10 +119,7 @@ describe("setupMqttDeviceManager", () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
     const alives = new Map<string, Alive>([
-      [
-        "entity1",
-        { lastAlive: false, addListener: jest.fn(), close: jest.fn() },
-      ],
+      ["entity1", { lastAlive: false, addListener: vi.fn(), close: vi.fn() }],
     ]);
 
     await setupMqttDeviceManager("device-id", entities, alives);
@@ -159,10 +138,7 @@ describe("setupMqttDeviceManager", () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
     const alives = new Map<string, Alive>([
-      [
-        "entity1",
-        { lastAlive: false, addListener: jest.fn(), close: jest.fn() },
-      ],
+      ["entity1", { lastAlive: false, addListener: vi.fn(), close: vi.fn() }],
     ]);
 
     mockBuildOrigin.mockReturnValue({ origin: "test-origin" });
@@ -185,11 +161,11 @@ describe("setupMqttDeviceManager", () => {
   test("状態の変更イベントが正しく処理される", async () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
-    const mockAddListener = jest.fn();
+    const mockAddListener = vi.fn();
     const alives = new Map<string, Alive>([
       [
         "entity1",
-        { lastAlive: false, addListener: mockAddListener, close: jest.fn() },
+        { lastAlive: false, addListener: mockAddListener, close: vi.fn() },
       ],
     ]);
 
@@ -201,14 +177,11 @@ describe("setupMqttDeviceManager", () => {
   test("状態の変更を検知すると通知する", async () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
-    const mockAddListener = jest.fn() as jest.Mock<
-      ReturnType<Alive["addListener"]>,
-      Parameters<Alive["addListener"]>
-    >;
+    const mockAddListener = vi.fn<Alive["addListener"]>();
     const alives = new Map<string, Alive>([
       [
         "entity1",
-        { lastAlive: false, addListener: mockAddListener, close: jest.fn() },
+        { lastAlive: false, addListener: mockAddListener, close: vi.fn() },
       ],
     ]);
 
@@ -226,14 +199,11 @@ describe("setupMqttDeviceManager", () => {
   test("電源の状態を変更して暫くの間、状態の変更を通知しない", async () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
-    const mockAddListener = jest.fn() as jest.Mock<
-      ReturnType<Alive["addListener"]>,
-      Parameters<Alive["addListener"]>
-    >;
+    const mockAddListener = vi.fn<Alive["addListener"]>();
     const alives = new Map<string, Alive>([
       [
         "entity1",
-        { lastAlive: false, addListener: mockAddListener, close: jest.fn() },
+        { lastAlive: false, addListener: mockAddListener, close: vi.fn() },
       ],
     ]);
 
