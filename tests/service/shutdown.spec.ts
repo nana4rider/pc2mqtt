@@ -18,7 +18,6 @@ vi.mock("node-ssh", () => ({
 describe("getShutdownCommand", () => {
   const env = process.env;
   beforeEach(() => {
-    vi.resetModules();
     vi.clearAllMocks();
     process.env = { ...env };
   });

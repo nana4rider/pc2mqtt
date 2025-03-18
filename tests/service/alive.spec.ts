@@ -2,7 +2,6 @@ import { RemoteConfig } from "@/entity";
 import requestAlive from "@/service/alive";
 import ping, { PingResponse } from "ping";
 import { setTimeout } from "timers/promises";
-import { Mock } from "vitest";
 
 vi.mock("ping", () => ({
   default: {
@@ -13,16 +12,14 @@ vi.mock("ping", () => ({
 }));
 
 describe("requestAlive", () => {
-  const env = process.env;
+  const mockProbe = vi.mocked(ping.promise.probe);
+
   beforeEach(() => {
-    vi.resetModules();
     vi.clearAllMocks();
-    process.env = { ...env };
   });
 
   test("alive: true", async () => {
-    const mockProbe = ping.promise.probe as Mock;
-    mockProbe.mockResolvedValueOnce({ alive: true });
+    mockProbe.mockResolvedValueOnce({ alive: true } as PingResponse);
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
@@ -34,8 +31,7 @@ describe("requestAlive", () => {
   });
 
   test("alive: false", async () => {
-    const mockProbe = ping.promise.probe as Mock;
-    mockProbe.mockResolvedValueOnce({ alive: false });
+    mockProbe.mockResolvedValueOnce({ alive: false } as PingResponse);
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
 
@@ -47,7 +43,6 @@ describe("requestAlive", () => {
   });
 
   test("throw error", async () => {
-    const mockProbe = ping.promise.probe as Mock;
     mockProbe.mockRejectedValueOnce(new Error());
 
     const config = { ipAddress: "192.168.1.1" } as RemoteConfig;
@@ -60,7 +55,6 @@ describe("requestAlive", () => {
   });
 
   test("listener", async () => {
-    const mockProbe = vi.spyOn(ping.promise, "probe");
     mockProbe
       .mockResolvedValueOnce({ alive: true } as PingResponse)
       .mockResolvedValueOnce({ alive: false } as PingResponse);

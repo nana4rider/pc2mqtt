@@ -10,7 +10,6 @@ vi.mock("wol", () => ({
 
 describe("startup", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
     vi.clearAllMocks();
   });
 

@@ -12,7 +12,6 @@ import { Alive } from "@/service/alive";
 import initializeMqttClient from "@/service/mqtt";
 import shutdown from "@/service/shutdown";
 import startup from "@/service/startup";
-import { Mock } from "vitest";
 
 vi.mock("@/payload/builder", async () => {
   const actual = await vi.importActual<typeof builder>("@/payload/builder");
@@ -36,19 +35,12 @@ vi.mock("@/service/mqtt", () => ({
   default: vi.fn(),
 }));
 
-const mockBuildOrigin = buildOrigin as Mock<typeof buildOrigin>;
-const mockBuildDevice = buildDevice as Mock<typeof buildDevice>;
-const mockBuildEntity = buildEntity as Mock<typeof buildEntity>;
-
 const mockPublish = vi.fn();
-const mockInitializeMqttClient = initializeMqttClient as Mock<
-  typeof initializeMqttClient
->;
 
 beforeEach(() => {
   vi.resetAllMocks();
 
-  mockInitializeMqttClient.mockResolvedValue({
+  vi.mocked(initializeMqttClient).mockResolvedValue({
     publish: mockPublish,
     taskQueueSize: 0,
     addSubscribe: vi.fn(),
@@ -56,22 +48,30 @@ beforeEach(() => {
   });
 });
 
+function getMockAlive(lastAlive: boolean): Alive {
+  return {
+    lastAlive,
+    addListener: vi.fn(),
+    close: vi.fn(),
+  };
+}
+
 describe("setupMqttDeviceManager", () => {
   test("エンティティごとのトピックが正しく購読される", async () => {
     const entities = [{ id: "entity1" }, { id: "entity2" }] as Entity[];
 
     const alives = new Map<string, Alive>([
-      ["entity1", { lastAlive: false, addListener: vi.fn(), close: vi.fn() }],
-      ["entity2", { lastAlive: true, addListener: vi.fn(), close: vi.fn() }],
+      ["entity1", getMockAlive(false)],
+      ["entity2", getMockAlive(true)],
     ]);
 
-    mockBuildOrigin.mockReturnValue({ origin: "test-origin" });
-    mockBuildDevice.mockReturnValue({ device: "test-device" });
-    mockBuildEntity.mockReturnValue({ unique_id: "unique-id" });
+    vi.mocked(buildOrigin).mockReturnValue({ origin: "test-origin" });
+    vi.mocked(buildDevice).mockReturnValue({ device: "test-device" });
+    vi.mocked(buildEntity).mockReturnValue({ unique_id: "unique-id" });
 
     await setupMqttDeviceManager("device-id", entities, alives);
 
-    expect(mockInitializeMqttClient).toHaveBeenCalledWith(
+    expect(initializeMqttClient).toHaveBeenCalledWith(
       ["pc2mqtt/device-id/entity1/set", "pc2mqtt/device-id/entity2/set"],
       expect.any(Function),
     );
@@ -80,17 +80,15 @@ describe("setupMqttDeviceManager", () => {
   test("受信したメッセージでONになる", async () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
-    const alives = new Map<string, Alive>([
-      ["entity1", { lastAlive: false, addListener: vi.fn(), close: vi.fn() }],
-    ]);
+    const alives = new Map<string, Alive>([["entity1", getMockAlive(false)]]);
 
-    mockBuildOrigin.mockReturnValue({ origin: "test-origin" });
-    mockBuildDevice.mockReturnValue({ device: "test-device" });
-    mockBuildEntity.mockReturnValue({ unique_id: "unique-id" });
+    vi.mocked(buildOrigin).mockReturnValue({ origin: "test-origin" });
+    vi.mocked(buildDevice).mockReturnValue({ device: "test-device" });
+    vi.mocked(buildEntity).mockReturnValue({ unique_id: "unique-id" });
 
     await setupMqttDeviceManager("device-id", entities, alives);
 
-    const handleMessage = mockInitializeMqttClient.mock.calls[0][1];
+    const handleMessage = vi.mocked(initializeMqttClient).mock.calls[0][1];
     await handleMessage("pc2mqtt/device-id/entity1/set", StatusMessage.ON);
 
     expect(startup).toHaveBeenCalled();
@@ -99,17 +97,15 @@ describe("setupMqttDeviceManager", () => {
   test("受信したメッセージでOFFになる", async () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
-    const alives = new Map<string, Alive>([
-      ["entity1", { lastAlive: true, addListener: vi.fn(), close: vi.fn() }],
-    ]);
+    const alives = new Map<string, Alive>([["entity1", getMockAlive(true)]]);
 
-    mockBuildOrigin.mockReturnValue({ origin: "test-origin" });
-    mockBuildDevice.mockReturnValue({ device: "test-device" });
-    mockBuildEntity.mockReturnValue({ unique_id: "unique-id" });
+    vi.mocked(buildOrigin).mockReturnValue({ origin: "test-origin" });
+    vi.mocked(buildDevice).mockReturnValue({ device: "test-device" });
+    vi.mocked(buildEntity).mockReturnValue({ unique_id: "unique-id" });
 
     await setupMqttDeviceManager("device-id", entities, alives);
 
-    const handleMessage = mockInitializeMqttClient.mock.calls[0][1];
+    const handleMessage = vi.mocked(initializeMqttClient).mock.calls[0][1];
     await handleMessage("pc2mqtt/device-id/entity1/set", StatusMessage.OFF);
 
     expect(shutdown).toHaveBeenCalled();
@@ -118,13 +114,11 @@ describe("setupMqttDeviceManager", () => {
   test("未登録のトピックにメッセージが来た場合、無視する", async () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
-    const alives = new Map<string, Alive>([
-      ["entity1", { lastAlive: false, addListener: vi.fn(), close: vi.fn() }],
-    ]);
+    const alives = new Map<string, Alive>([["entity1", getMockAlive(false)]]);
 
     await setupMqttDeviceManager("device-id", entities, alives);
 
-    const handleMessage = mockInitializeMqttClient.mock.calls[0][1];
+    const handleMessage = vi.mocked(initializeMqttClient).mock.calls[0][1];
     await handleMessage(
       "pc2mqtt/device-id/unknown-entity/set",
       StatusMessage.ON,
@@ -137,13 +131,11 @@ describe("setupMqttDeviceManager", () => {
   test("Home Assistantにデバイス情報が送信される", async () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
-    const alives = new Map<string, Alive>([
-      ["entity1", { lastAlive: false, addListener: vi.fn(), close: vi.fn() }],
-    ]);
+    const alives = new Map<string, Alive>([["entity1", getMockAlive(false)]]);
 
-    mockBuildOrigin.mockReturnValue({ origin: "test-origin" });
-    mockBuildDevice.mockReturnValue({ device: "test-device" });
-    mockBuildEntity.mockReturnValue({ unique_id: "unique-id" });
+    vi.mocked(buildOrigin).mockReturnValue({ origin: "test-origin" });
+    vi.mocked(buildDevice).mockReturnValue({ device: "test-device" });
+    vi.mocked(buildEntity).mockReturnValue({ unique_id: "unique-id" });
 
     await setupMqttDeviceManager("device-id", entities, alives);
 
@@ -161,32 +153,22 @@ describe("setupMqttDeviceManager", () => {
   test("状態の変更イベントが正しく処理される", async () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
-    const mockAddListener = vi.fn();
-    const alives = new Map<string, Alive>([
-      [
-        "entity1",
-        { lastAlive: false, addListener: mockAddListener, close: vi.fn() },
-      ],
-    ]);
+    const mockAlive = getMockAlive(false);
+    const alives = new Map<string, Alive>([["entity1", mockAlive]]);
 
     await setupMqttDeviceManager("device-id", entities, alives);
 
-    expect(mockAddListener).toHaveBeenCalled();
+    expect(mockAlive.addListener).toHaveBeenCalled();
   });
 
   test("状態の変更を検知すると通知する", async () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
-    const mockAddListener = vi.fn<Alive["addListener"]>();
-    const alives = new Map<string, Alive>([
-      [
-        "entity1",
-        { lastAlive: false, addListener: mockAddListener, close: vi.fn() },
-      ],
-    ]);
+    const mockAlive = getMockAlive(false);
+    const alives = new Map<string, Alive>([["entity1", mockAlive]]);
 
     await setupMqttDeviceManager("device-id", entities, alives);
-    const mockListener = mockAddListener.mock.calls[0][0];
+    const mockListener = vi.mocked(mockAlive.addListener).mock.calls[0][0];
     mockListener(true);
 
     expect(mockPublish).toHaveBeenCalledWith(
@@ -199,23 +181,18 @@ describe("setupMqttDeviceManager", () => {
   test("電源の状態を変更して暫くの間、状態の変更を通知しない", async () => {
     const entities = [{ id: "entity1" }] as Entity[];
 
-    const mockAddListener = vi.fn<Alive["addListener"]>();
-    const alives = new Map<string, Alive>([
-      [
-        "entity1",
-        { lastAlive: false, addListener: mockAddListener, close: vi.fn() },
-      ],
-    ]);
+    const mockAlive = getMockAlive(false);
+    const alives = new Map<string, Alive>([["entity1", mockAlive]]);
 
     await setupMqttDeviceManager("device-id", entities, alives);
 
     // 電源ON
-    const handleMessage = mockInitializeMqttClient.mock.calls[0][1];
+    const handleMessage = vi.mocked(initializeMqttClient).mock.calls[0][1];
     await handleMessage("pc2mqtt/device-id/entity1/set", StatusMessage.ON);
 
     mockPublish.mockReset();
     // 直後のリスナー
-    const mockListener = mockAddListener.mock.calls[0][0];
+    const mockListener = vi.mocked(mockAlive.addListener).mock.calls[0][0];
     mockListener(false);
 
     expect(mockPublish).not.toHaveBeenCalled();
