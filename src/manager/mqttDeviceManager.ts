@@ -1,4 +1,4 @@
-import { Entity } from "@/entity";
+import type { Entity } from "@/entity";
 import env from "@/env";
 import {
   buildDevice,
@@ -7,7 +7,7 @@ import {
   StatusMessage,
 } from "@/payload/builder";
 import { getTopic, TopicType } from "@/payload/topic";
-import { Alive } from "@/service/alive";
+import type { Alive } from "@/service/alive";
 import initializeMqttClient from "@/service/mqtt";
 import shutdown from "@/service/shutdown";
 import startup from "@/service/startup";

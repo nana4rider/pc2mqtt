@@ -1,4 +1,4 @@
-import { RemoteConfig } from "@/entity";
+import type { RemoteConfig } from "@/entity";
 import startup from "@/service/startup";
 import wol from "wol";
 

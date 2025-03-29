@@ -1,4 +1,4 @@
-import { RemoteConfig } from "@/entity";
+import type { RemoteConfig } from "@/entity";
 import logger from "@/logger";
 import { NodeSSH } from "node-ssh";
 import path from "path";

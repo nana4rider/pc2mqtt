@@ -1,4 +1,4 @@
-import { RemoteConfig } from "@/entity";
+import type { RemoteConfig } from "@/entity";
 import shutdown from "@/service/shutdown";
 import path from "path";
 

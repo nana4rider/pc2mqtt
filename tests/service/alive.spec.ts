@@ -1,6 +1,7 @@
-import { RemoteConfig } from "@/entity";
+import type { RemoteConfig } from "@/entity";
 import requestAlive from "@/service/alive";
-import ping, { PingResponse } from "ping";
+import type { PingResponse } from "ping";
+import ping from "ping";
 import { setTimeout } from "timers/promises";
 
 vi.mock("ping", () => ({

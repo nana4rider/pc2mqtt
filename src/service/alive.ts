@@ -1,4 +1,4 @@
-import { RemoteConfig } from "@/entity";
+import type { RemoteConfig } from "@/entity";
 import env from "@/env";
 import logger from "@/logger";
 import ping from "ping";
