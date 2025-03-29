@@ -1,4 +1,4 @@
-import { Config as SSHConfig } from "node-ssh";
+import type { Config as SSHConfig } from "node-ssh";
 
 export type Entity = {
   id: string;
