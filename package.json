@@ -16,7 +16,10 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.ts": "npm run lint"
+    "*.ts": [
+      "eslint --max-warnings 0",
+      "prettier --check"
+    ]
   },
   "dependencies": {
     "envalid": "^8.0.0",

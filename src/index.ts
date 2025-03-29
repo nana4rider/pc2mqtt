@@ -1,4 +1,4 @@
-import { Entity } from "@/entity";
+import type { Entity } from "@/entity";
 import logger from "@/logger";
 import { setupAvailability } from "@/manager/availabilityManager";
 import setupMqttDeviceManager from "@/manager/mqttDeviceManager";
