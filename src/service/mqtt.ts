@@ -12,7 +12,6 @@ export type MqttClient = {
     message: string,
     options?: { retain?: boolean; qos?: 0 | 1 | 2 },
   ) => void;
-  addSubscribe: (topic: string) => void;
   close: (wait?: boolean) => Promise<void>;
 };
 
@@ -87,18 +86,11 @@ export default async function initializeMqttClient(
     });
   };
 
-  const addSubscribe = (topic: string): void => {
-    taskQueue.push(async () => {
-      await client.subscribeAsync(topic);
-    });
-  };
-
   return {
     get taskQueueSize() {
       return taskQueue.length;
     },
     publish,
-    addSubscribe,
     close,
   };
 }

@@ -7,7 +7,6 @@ describe("setupAvailability", () => {
   const mockMqttClient: MqttClient = {
     publish: vi.fn(),
     taskQueueSize: 0,
-    addSubscribe: vi.fn(),
     close: vi.fn(),
   };
   const entities = [

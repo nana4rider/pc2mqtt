@@ -128,18 +128,6 @@ describe("initializeMqttClient", () => {
     await mqtt.close(true);
   });
 
-  test("addSubscribeがタスクキューに追加される", async () => {
-    const mqtt = await initializeMqttClient(["topic/test"], () => {});
-
-    // addSubscribeを呼び出す
-    mqtt.addSubscribe("topic/new");
-
-    // タスクキューの状態を確認
-    expect(mqtt.taskQueueSize).toBe(1);
-
-    await mqtt.close(true);
-  });
-
   test("close(true)を呼び出すとタスクキューが空になりクライアントが終了する", async () => {
     mockPublishAsync.mockImplementation(async () => {
       await setTimeout(100);
