@@ -70,7 +70,7 @@ describe("setupMqttDeviceManager", () => {
 
     await setupMqttDeviceManager("device-id", entities, alives);
 
-    expect(initializeMqttClient).toHaveBeenCalledWith(
+    expect(initializeMqttClient).toHaveBeenCalledExactlyOnceWith(
       ["pc2mqtt/device-id/entity1/set", "pc2mqtt/device-id/entity2/set"],
       expect.any(Function),
     );
@@ -138,7 +138,7 @@ describe("setupMqttDeviceManager", () => {
 
     await setupMqttDeviceManager("device-id", entities, alives);
 
-    expect(mockPublish).toHaveBeenCalledWith(
+    expect(mockPublish).toHaveBeenLastCalledWith(
       `${env.HA_DISCOVERY_PREFIX}/switch/unique-id/config`,
       JSON.stringify({
         unique_id: "unique-id",
@@ -170,7 +170,7 @@ describe("setupMqttDeviceManager", () => {
     const mockListener = vi.mocked(mockAlive.addListener).mock.calls[0][0];
     mockListener(true);
 
-    expect(mockPublish).toHaveBeenCalledWith(
+    expect(mockPublish).toHaveBeenLastCalledWith(
       "pc2mqtt/device-id/entity1/state",
       "ON",
       { retain: false },

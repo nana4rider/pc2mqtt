@@ -27,7 +27,9 @@ describe("requestAlive", () => {
     const { lastAlive, close } = await requestAlive(config);
     close();
 
-    expect(mockProbe).toHaveBeenCalledWith("192.168.1.1", { timeout: 1 });
+    expect(mockProbe).toHaveBeenCalledExactlyOnceWith("192.168.1.1", {
+      timeout: 1,
+    });
     expect(lastAlive).toBe(true);
   });
 
@@ -39,7 +41,9 @@ describe("requestAlive", () => {
     const { lastAlive, close } = await requestAlive(config);
     close();
 
-    expect(mockProbe).toHaveBeenCalledWith("192.168.1.1", { timeout: 1 });
+    expect(mockProbe).toHaveBeenCalledExactlyOnceWith("192.168.1.1", {
+      timeout: 1,
+    });
     expect(lastAlive).toBe(false);
   });
 
@@ -51,7 +55,9 @@ describe("requestAlive", () => {
     const { lastAlive, close } = await requestAlive(config);
     close();
 
-    expect(mockProbe).toHaveBeenCalledWith("192.168.1.1", { timeout: 1 });
+    expect(mockProbe).toHaveBeenCalledExactlyOnceWith("192.168.1.1", {
+      timeout: 1,
+    });
     expect(lastAlive).toBe(false);
   });
 
@@ -70,6 +76,6 @@ describe("requestAlive", () => {
 
     expect(mockProbe).toHaveBeenCalledTimes(2);
     expect(alive.lastAlive).toBe(false);
-    expect(mockListener).toHaveBeenCalledWith(false);
+    expect(mockListener).toHaveBeenCalledExactlyOnceWith(false);
   });
 });

@@ -32,7 +32,7 @@ describe("getShutdownCommand", () => {
       ssh: {},
     } as RemoteConfig);
 
-    expect(mockConnect).toHaveBeenCalledWith(
+    expect(mockConnect).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
         privateKeyPath: path.join(homePath, ".ssh", "id_ed25519"),
       }),
@@ -49,7 +49,7 @@ describe("getShutdownCommand", () => {
       ssh: {},
     } as RemoteConfig);
 
-    expect(mockConnect).toHaveBeenCalledWith(
+    expect(mockConnect).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
         privateKeyPath: path.join(homePath, ".ssh", "id_ed25519"),
       }),
@@ -66,7 +66,7 @@ describe("getShutdownCommand", () => {
       },
     } as RemoteConfig);
 
-    expect(mockConnect).toHaveBeenCalledWith(
+    expect(mockConnect).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
         privateKeyPath: undefined,
       }),
@@ -81,7 +81,7 @@ describe("getShutdownCommand", () => {
       ssh: {},
     } as RemoteConfig);
 
-    expect(mockExecCommand).toHaveBeenCalledWith("sudo shutdown now");
+    expect(mockExecCommand).toHaveBeenLastCalledWith("sudo shutdown now");
   });
 
   test("Mac OS", async () => {
@@ -92,7 +92,7 @@ describe("getShutdownCommand", () => {
       ssh: {},
     } as RemoteConfig);
 
-    expect(mockExecCommand).toHaveBeenCalledWith("sudo pmset sleepnow");
+    expect(mockExecCommand).toHaveBeenLastCalledWith("sudo pmset sleepnow");
   });
 
   test("Windows OS", async () => {
@@ -103,7 +103,7 @@ describe("getShutdownCommand", () => {
       ssh: {},
     } as RemoteConfig);
 
-    expect(mockExecCommand).toHaveBeenCalledWith("shutdown /s /t 0");
+    expect(mockExecCommand).toHaveBeenLastCalledWith("shutdown /s /t 0");
   });
 
   test("接続に失敗してもエラーにしない", async () => {

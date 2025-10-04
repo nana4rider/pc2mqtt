@@ -20,7 +20,7 @@ describe("startup", () => {
       subnetMask: "255.255.255.0",
     } as RemoteConfig);
 
-    expect(wol.wake).toHaveBeenCalledWith("00:11:22:33:44:55", {
+    expect(wol.wake).toHaveBeenCalledExactlyOnceWith("00:11:22:33:44:55", {
       address: "192.168.1.255",
     });
   });
@@ -31,7 +31,7 @@ describe("startup", () => {
       macAddress: "00:11:22:33:44:55",
     } as RemoteConfig);
 
-    expect(wol.wake).toHaveBeenCalledWith("00:11:22:33:44:55", {
+    expect(wol.wake).toHaveBeenCalledExactlyOnceWith("00:11:22:33:44:55", {
       address: "10.255.255.255",
     });
   });
@@ -42,7 +42,7 @@ describe("startup", () => {
       macAddress: "00:11:22:33:44:55",
     } as RemoteConfig);
 
-    expect(wol.wake).toHaveBeenCalledWith("00:11:22:33:44:55", {
+    expect(wol.wake).toHaveBeenCalledExactlyOnceWith("00:11:22:33:44:55", {
       address: "172.16.255.255",
     });
   });
@@ -53,7 +53,7 @@ describe("startup", () => {
       macAddress: "00:11:22:33:44:55",
     } as RemoteConfig);
 
-    expect(wol.wake).toHaveBeenCalledWith("00:11:22:33:44:55", {
+    expect(wol.wake).toHaveBeenCalledExactlyOnceWith("00:11:22:33:44:55", {
       address: "192.168.1.255",
     });
   });
