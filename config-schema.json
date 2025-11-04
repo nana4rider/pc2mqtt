@@ -1,0 +1,897 @@
+{
+  "type": "object",
+  "properties": {
+    "deviceId": { "type": "string" },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "remote": {
+            "type": "object",
+            "properties": {
+              "ssh": { "$ref": "#/definitions/Config" },
+              "macAddress": { "type": "string" },
+              "ipAddress": { "type": "string" },
+              "subnetMask": { "type": "string" }
+            },
+            "required": ["ipAddress", "macAddress", "ssh"]
+          }
+        },
+        "required": ["id", "name", "remote"]
+      }
+    }
+  },
+  "required": ["deviceId", "entities"],
+  "definitions": {
+    "Config": {
+      "allOf": [
+        { "$ref": "#/definitions/ConnectConfig" },
+        {
+          "type": "object",
+          "properties": {
+            "password": { "type": "string" },
+            "privateKey": { "type": "string" },
+            "privateKeyPath": { "type": "string" },
+            "tryKeyboard": { "type": "boolean" },
+            "onKeyboardInteractive": { "type": "object" }
+          }
+        }
+      ]
+    },
+    "ConnectConfig": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "description": "Hostname or IP address of the server.",
+          "type": "string"
+        },
+        "port": {
+          "description": "Port number of the server.",
+          "type": "number"
+        },
+        "forceIPv4": {
+          "description": "Only connect via resolved IPv4 address for `host`.",
+          "type": "boolean"
+        },
+        "forceIPv6": {
+          "description": "Only connect via resolved IPv6 address for `host`.",
+          "type": "boolean"
+        },
+        "hostHash": {
+          "description": "The host's key is hashed using this method and passed to `hostVerifier`.",
+          "type": "string"
+        },
+        "hostVerifier": {
+          "description": "Verifies a hexadecimal hash of the host's key.",
+          "type": "object"
+        },
+        "username": {
+          "description": "Username for authentication.",
+          "type": "string"
+        },
+        "password": {
+          "description": "Password for password-based user authentication.",
+          "type": "string"
+        },
+        "agent": {
+          "description": "Path to ssh-agent's UNIX socket for ssh-agent-based user authentication (or 'pageant' when using Pagent on Windows).",
+          "anyOf": [
+            { "$ref": "#/definitions/BaseAgent<string|Buffer|ParsedKey>" },
+            { "type": "string" }
+          ]
+        },
+        "privateKey": {
+          "description": "Buffer or string that contains a private key for either key-based or hostbased user authentication (OpenSSH format).",
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": { "^[0-9]+$": { "type": "number" } },
+              "properties": {
+                "BYTES_PER_ELEMENT": { "type": "number" },
+                "buffer": { "$ref": "#/definitions/ArrayBufferLike" },
+                "byteLength": { "type": "number" },
+                "byteOffset": { "type": "number" },
+                "length": { "type": "number" },
+                "__@toStringTag@266": {
+                  "type": "string",
+                  "const": "Uint8Array"
+                }
+              },
+              "required": [
+                "BYTES_PER_ELEMENT",
+                "__@toStringTag@266",
+                "buffer",
+                "byteLength",
+                "byteOffset",
+                "length"
+              ]
+            },
+            { "type": "string" }
+          ]
+        },
+        "passphrase": {
+          "description": "For an encrypted private key, this is the passphrase used to decrypt it.",
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": { "^[0-9]+$": { "type": "number" } },
+              "properties": {
+                "BYTES_PER_ELEMENT": { "type": "number" },
+                "buffer": { "$ref": "#/definitions/ArrayBufferLike" },
+                "byteLength": { "type": "number" },
+                "byteOffset": { "type": "number" },
+                "length": { "type": "number" },
+                "__@toStringTag@266": {
+                  "type": "string",
+                  "const": "Uint8Array"
+                }
+              },
+              "required": [
+                "BYTES_PER_ELEMENT",
+                "__@toStringTag@266",
+                "buffer",
+                "byteLength",
+                "byteOffset",
+                "length"
+              ]
+            },
+            { "type": "string" }
+          ]
+        },
+        "localHostname": {
+          "description": "Along with `localUsername` and `privateKey`, set this to a non-empty string for hostbased user authentication.",
+          "type": "string"
+        },
+        "localUsername": {
+          "description": "Along with `localHostname` and `privateKey`, set this to a non-empty string for hostbased user authentication.",
+          "type": "string"
+        },
+        "tryKeyboard": {
+          "description": "Try keyboard-interactive user authentication if primary user authentication method fails.",
+          "type": "boolean"
+        },
+        "keepaliveInterval": {
+          "description": "How often (in milliseconds) to send SSH-level keepalive packets to the server. Set to 0 to disable.",
+          "type": "number"
+        },
+        "keepaliveCountMax": {
+          "description": "How many consecutive, unanswered SSH-level keepalive packets that can be sent to the server before disconnection.",
+          "type": "number"
+        },
+        "readyTimeout": {
+          "description": "* How long (in milliseconds) to wait for the SSH handshake to complete.",
+          "type": "number"
+        },
+        "strictVendor": {
+          "description": "Performs a strict server vendor check before sending vendor-specific requests.",
+          "type": "boolean"
+        },
+        "sock": {
+          "description": "A `ReadableStream` to use for communicating with the server instead of creating and using a new TCP connection (useful for connection hopping).",
+          "$ref": "#/definitions/Readable"
+        },
+        "agentForward": {
+          "description": "Set to `true` to use OpenSSH agent forwarding (`auth-agent@openssh.com`) for the life of the connection.",
+          "type": "boolean"
+        },
+        "algorithms": {
+          "description": "Explicit overrides for the default transport layer algorithms used for the connection.",
+          "$ref": "#/definitions/Algorithms"
+        },
+        "debug": {
+          "description": "A function that receives a single string argument to get detailed (local) debug information.",
+          "type": "object"
+        },
+        "authHandler": {
+          "description": "Function with parameters (methodsLeft, partialSuccess, callback) where methodsLeft and partialSuccess are null on the first authentication attempt, otherwise are an array and boolean respectively. Return or call callback() with the name of the authentication method to try next (pass false to signal no more methods to try). Valid method names are: 'none', 'password', 'publickey', 'agent', 'keyboard-interactive', 'hostbased'. Default: function that follows a set method order: None -> Password -> Private Key -> Agent (-> keyboard-interactive if tryKeyboard is true) -> Hostbased.",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/AuthenticationType" }
+            },
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/AuthMethod" }
+            },
+            { "type": "object" }
+          ]
+        },
+        "localAddress": {
+          "description": "IP address of the network interface to use to connect to the server. Default: (none -- determined by OS)",
+          "type": "string"
+        },
+        "localPort": {
+          "description": "The local port number to connect from. Default: (none -- determined by OS)",
+          "type": "number"
+        },
+        "timeout": {
+          "description": "The underlying socket timeout in ms. Default: none)",
+          "type": "number"
+        },
+        "ident": {
+          "description": "A custom server software name/version identifier. Default: 'ssh2js' + moduleVersion + 'srv'",
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": { "^[0-9]+$": { "type": "number" } },
+              "properties": {
+                "BYTES_PER_ELEMENT": { "type": "number" },
+                "buffer": { "$ref": "#/definitions/ArrayBufferLike" },
+                "byteLength": { "type": "number" },
+                "byteOffset": { "type": "number" },
+                "length": { "type": "number" },
+                "__@toStringTag@266": {
+                  "type": "string",
+                  "const": "Uint8Array"
+                }
+              },
+              "required": [
+                "BYTES_PER_ELEMENT",
+                "__@toStringTag@266",
+                "buffer",
+                "byteLength",
+                "byteOffset",
+                "length"
+              ]
+            },
+            { "type": "string" }
+          ]
+        }
+      }
+    },
+    "BaseAgent<string|Buffer|ParsedKey>": { "type": "object" },
+    "ArrayBufferLike": {
+      "anyOf": [
+        { "$ref": "#/definitions/ArrayBuffer" },
+        { "$ref": "#/definitions/SharedArrayBuffer" }
+      ]
+    },
+    "ArrayBuffer": {
+      "type": "object",
+      "properties": {
+        "byteLength": { "type": "number" },
+        "__@toStringTag@266": { "type": "string" }
+      },
+      "required": ["__@toStringTag@266", "byteLength"]
+    },
+    "SharedArrayBuffer": {
+      "type": "object",
+      "properties": {
+        "byteLength": { "type": "number" },
+        "__@species@1713": { "$ref": "#/definitions/SharedArrayBuffer" },
+        "__@toStringTag@266": { "type": "string", "const": "SharedArrayBuffer" }
+      },
+      "required": ["__@species@1713", "__@toStringTag@266", "byteLength"]
+    },
+    "Readable": {
+      "type": "object",
+      "properties": {
+        "readableAborted": {
+          "description": "Returns whether the stream was destroyed or errored before emitting `'end'`.",
+          "type": "boolean"
+        },
+        "readable": {
+          "description": "Is `true` if it is safe to call {@link read}, which means\nthe stream has not been destroyed or emitted `'error'` or `'end'`.",
+          "type": "boolean"
+        },
+        "readableDidRead": {
+          "description": "Returns whether `'data'` has been emitted.",
+          "type": "boolean"
+        },
+        "readableEncoding": {
+          "description": "Getter for the property `encoding` of a given `Readable` stream. The `encoding` property can be set using the {@link setEncoding} method.",
+          "anyOf": [
+            {
+              "enum": [
+                "ascii",
+                "base64",
+                "base64url",
+                "binary",
+                "hex",
+                "latin1",
+                "ucs-2",
+                "ucs2",
+                "utf-16le",
+                "utf-8",
+                "utf16le",
+                "utf8"
+              ],
+              "type": "string"
+            },
+            { "type": "null" }
+          ]
+        },
+        "readableEnded": {
+          "description": "Becomes `true` when [`'end'`](https://nodejs.org/docs/latest-v24.x/api/stream.html#event-end) event is emitted.",
+          "type": "boolean"
+        },
+        "readableFlowing": {
+          "description": "This property reflects the current state of a `Readable` stream as described\nin the [Three states](https://nodejs.org/docs/latest-v24.x/api/stream.html#three-states) section.",
+          "type": ["null", "boolean"]
+        },
+        "readableHighWaterMark": {
+          "description": "Returns the value of `highWaterMark` passed when creating this `Readable`.",
+          "type": "number"
+        },
+        "readableLength": {
+          "description": "This property contains the number of bytes (or objects) in the queue\nready to be read. The value provides introspection data regarding\nthe status of the `highWaterMark`.",
+          "type": "number"
+        },
+        "readableObjectMode": {
+          "description": "Getter for the property `objectMode` of a given `Readable` stream.",
+          "type": "boolean"
+        },
+        "destroyed": {
+          "description": "Is `true` after `readable.destroy()` has been called.",
+          "type": "boolean"
+        },
+        "closed": {
+          "description": "Is `true` after `'close'` has been emitted.",
+          "type": "boolean"
+        },
+        "errored": {
+          "description": "Returns error if the stream has been destroyed with an error.",
+          "anyOf": [{ "$ref": "#/definitions/Error" }, { "type": "null" }]
+        }
+      },
+      "required": [
+        "closed",
+        "destroyed",
+        "errored",
+        "readable",
+        "readableAborted",
+        "readableDidRead",
+        "readableEncoding",
+        "readableEnded",
+        "readableFlowing",
+        "readableHighWaterMark",
+        "readableLength",
+        "readableObjectMode"
+      ]
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "message": { "type": "string" },
+        "stack": { "type": "string" },
+        "cause": {}
+      },
+      "required": ["message", "name"]
+    },
+    "Algorithms": {
+      "description": "Overrides for the default transport layer algorithms used for the connection.\n\nThe order of the algorithms in the arrays are important, with the most favorable being first.",
+      "type": "object",
+      "properties": {
+        "kex": {
+          "description": "Lists of supported algorithms can either be an ordered array of all supported algorithms,\nOR a map of algorithms to manipulate the default list",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/KexAlgorithm" }
+            },
+            {
+              "$ref": "#/definitions/Record<\"remove\"|\"append\"|\"prepend\",KexAlgorithm|KexAlgorithm[]>"
+            }
+          ]
+        },
+        "cipher": {
+          "description": "Lists of supported algorithms can either be an ordered array of all supported algorithms,\nOR a map of algorithms to manipulate the default list",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/CipherAlgorithm" }
+            },
+            {
+              "$ref": "#/definitions/Record<\"remove\"|\"append\"|\"prepend\",CipherAlgorithm|CipherAlgorithm[]>"
+            }
+          ]
+        },
+        "serverHostKey": {
+          "description": "Lists of supported algorithms can either be an ordered array of all supported algorithms,\nOR a map of algorithms to manipulate the default list",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/ServerHostKeyAlgorithm" }
+            },
+            {
+              "$ref": "#/definitions/Record<\"remove\"|\"append\"|\"prepend\",ServerHostKeyAlgorithm|ServerHostKeyAlgorithm[]>"
+            }
+          ]
+        },
+        "hmac": {
+          "description": "Lists of supported algorithms can either be an ordered array of all supported algorithms,\nOR a map of algorithms to manipulate the default list",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/MacAlgorithm" }
+            },
+            {
+              "$ref": "#/definitions/Record<\"remove\"|\"append\"|\"prepend\",MacAlgorithm|MacAlgorithm[]>"
+            }
+          ]
+        },
+        "compress": {
+          "description": "Lists of supported algorithms can either be an ordered array of all supported algorithms,\nOR a map of algorithms to manipulate the default list",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/CompressionAlgorithm" }
+            },
+            {
+              "$ref": "#/definitions/Record<\"remove\"|\"append\"|\"prepend\",CompressionAlgorithm|CompressionAlgorithm[]>"
+            }
+          ]
+        }
+      }
+    },
+    "KexAlgorithm": {
+      "description": "Possible Key Exchange Algorithms",
+      "enum": [
+        "curve25519-sha256",
+        "curve25519-sha256@libssh.org",
+        "diffie-hellman-group-exchange-sha1",
+        "diffie-hellman-group-exchange-sha256",
+        "diffie-hellman-group1-sha1",
+        "diffie-hellman-group14-sha1",
+        "diffie-hellman-group14-sha256",
+        "diffie-hellman-group15-sha512",
+        "diffie-hellman-group16-sha512",
+        "diffie-hellman-group17-sha512",
+        "diffie-hellman-group18-sha512",
+        "ecdh-sha2-nistp256",
+        "ecdh-sha2-nistp384",
+        "ecdh-sha2-nistp521"
+      ],
+      "type": "string"
+    },
+    "Record<\"remove\"|\"append\"|\"prepend\",KexAlgorithm|KexAlgorithm[]>": {
+      "type": "object",
+      "properties": {
+        "remove": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/KexAlgorithm" }
+            },
+            {
+              "enum": [
+                "curve25519-sha256",
+                "curve25519-sha256@libssh.org",
+                "diffie-hellman-group-exchange-sha1",
+                "diffie-hellman-group-exchange-sha256",
+                "diffie-hellman-group1-sha1",
+                "diffie-hellman-group14-sha1",
+                "diffie-hellman-group14-sha256",
+                "diffie-hellman-group15-sha512",
+                "diffie-hellman-group16-sha512",
+                "diffie-hellman-group17-sha512",
+                "diffie-hellman-group18-sha512",
+                "ecdh-sha2-nistp256",
+                "ecdh-sha2-nistp384",
+                "ecdh-sha2-nistp521"
+              ],
+              "type": "string"
+            }
+          ]
+        },
+        "append": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/KexAlgorithm" }
+            },
+            {
+              "enum": [
+                "curve25519-sha256",
+                "curve25519-sha256@libssh.org",
+                "diffie-hellman-group-exchange-sha1",
+                "diffie-hellman-group-exchange-sha256",
+                "diffie-hellman-group1-sha1",
+                "diffie-hellman-group14-sha1",
+                "diffie-hellman-group14-sha256",
+                "diffie-hellman-group15-sha512",
+                "diffie-hellman-group16-sha512",
+                "diffie-hellman-group17-sha512",
+                "diffie-hellman-group18-sha512",
+                "ecdh-sha2-nistp256",
+                "ecdh-sha2-nistp384",
+                "ecdh-sha2-nistp521"
+              ],
+              "type": "string"
+            }
+          ]
+        },
+        "prepend": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/KexAlgorithm" }
+            },
+            {
+              "enum": [
+                "curve25519-sha256",
+                "curve25519-sha256@libssh.org",
+                "diffie-hellman-group-exchange-sha1",
+                "diffie-hellman-group-exchange-sha256",
+                "diffie-hellman-group1-sha1",
+                "diffie-hellman-group14-sha1",
+                "diffie-hellman-group14-sha256",
+                "diffie-hellman-group15-sha512",
+                "diffie-hellman-group16-sha512",
+                "diffie-hellman-group17-sha512",
+                "diffie-hellman-group18-sha512",
+                "ecdh-sha2-nistp256",
+                "ecdh-sha2-nistp384",
+                "ecdh-sha2-nistp521"
+              ],
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": ["append", "prepend", "remove"]
+    },
+    "CipherAlgorithm": {
+      "enum": [
+        "3des-cbc",
+        "aes128-cbc",
+        "aes128-ctr",
+        "aes128-gcm",
+        "aes128-gcm@openssh.com",
+        "aes192-cbc",
+        "aes192-ctr",
+        "aes256-cbc",
+        "aes256-ctr",
+        "aes256-gcm",
+        "aes256-gcm@openssh.com",
+        "arcfour",
+        "arcfour128",
+        "arcfour256",
+        "blowfish-cbc",
+        "cast128-cbc",
+        "chacha20-poly1305@openssh.com"
+      ],
+      "type": "string"
+    },
+    "Record<\"remove\"|\"append\"|\"prepend\",CipherAlgorithm|CipherAlgorithm[]>": {
+      "type": "object",
+      "properties": {
+        "remove": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/CipherAlgorithm" }
+            },
+            {
+              "enum": [
+                "3des-cbc",
+                "aes128-cbc",
+                "aes128-ctr",
+                "aes128-gcm",
+                "aes128-gcm@openssh.com",
+                "aes192-cbc",
+                "aes192-ctr",
+                "aes256-cbc",
+                "aes256-ctr",
+                "aes256-gcm",
+                "aes256-gcm@openssh.com",
+                "arcfour",
+                "arcfour128",
+                "arcfour256",
+                "blowfish-cbc",
+                "cast128-cbc",
+                "chacha20-poly1305@openssh.com"
+              ],
+              "type": "string"
+            }
+          ]
+        },
+        "append": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/CipherAlgorithm" }
+            },
+            {
+              "enum": [
+                "3des-cbc",
+                "aes128-cbc",
+                "aes128-ctr",
+                "aes128-gcm",
+                "aes128-gcm@openssh.com",
+                "aes192-cbc",
+                "aes192-ctr",
+                "aes256-cbc",
+                "aes256-ctr",
+                "aes256-gcm",
+                "aes256-gcm@openssh.com",
+                "arcfour",
+                "arcfour128",
+                "arcfour256",
+                "blowfish-cbc",
+                "cast128-cbc",
+                "chacha20-poly1305@openssh.com"
+              ],
+              "type": "string"
+            }
+          ]
+        },
+        "prepend": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/CipherAlgorithm" }
+            },
+            {
+              "enum": [
+                "3des-cbc",
+                "aes128-cbc",
+                "aes128-ctr",
+                "aes128-gcm",
+                "aes128-gcm@openssh.com",
+                "aes192-cbc",
+                "aes192-ctr",
+                "aes256-cbc",
+                "aes256-ctr",
+                "aes256-gcm",
+                "aes256-gcm@openssh.com",
+                "arcfour",
+                "arcfour128",
+                "arcfour256",
+                "blowfish-cbc",
+                "cast128-cbc",
+                "chacha20-poly1305@openssh.com"
+              ],
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": ["append", "prepend", "remove"]
+    },
+    "ServerHostKeyAlgorithm": {
+      "enum": [
+        "ecdsa-sha2-nistp256",
+        "ecdsa-sha2-nistp384",
+        "ecdsa-sha2-nistp521",
+        "rsa-sha2-256",
+        "rsa-sha2-512",
+        "ssh-dss",
+        "ssh-ed25519",
+        "ssh-rsa"
+      ],
+      "type": "string"
+    },
+    "Record<\"remove\"|\"append\"|\"prepend\",ServerHostKeyAlgorithm|ServerHostKeyAlgorithm[]>": {
+      "type": "object",
+      "properties": {
+        "remove": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/ServerHostKeyAlgorithm" }
+            },
+            {
+              "enum": [
+                "ecdsa-sha2-nistp256",
+                "ecdsa-sha2-nistp384",
+                "ecdsa-sha2-nistp521",
+                "rsa-sha2-256",
+                "rsa-sha2-512",
+                "ssh-dss",
+                "ssh-ed25519",
+                "ssh-rsa"
+              ],
+              "type": "string"
+            }
+          ]
+        },
+        "append": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/ServerHostKeyAlgorithm" }
+            },
+            {
+              "enum": [
+                "ecdsa-sha2-nistp256",
+                "ecdsa-sha2-nistp384",
+                "ecdsa-sha2-nistp521",
+                "rsa-sha2-256",
+                "rsa-sha2-512",
+                "ssh-dss",
+                "ssh-ed25519",
+                "ssh-rsa"
+              ],
+              "type": "string"
+            }
+          ]
+        },
+        "prepend": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/ServerHostKeyAlgorithm" }
+            },
+            {
+              "enum": [
+                "ecdsa-sha2-nistp256",
+                "ecdsa-sha2-nistp384",
+                "ecdsa-sha2-nistp521",
+                "rsa-sha2-256",
+                "rsa-sha2-512",
+                "ssh-dss",
+                "ssh-ed25519",
+                "ssh-rsa"
+              ],
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": ["append", "prepend", "remove"]
+    },
+    "MacAlgorithm": {
+      "enum": [
+        "hmac-md5",
+        "hmac-md5-96",
+        "hmac-ripemd160",
+        "hmac-sha1",
+        "hmac-sha1-96",
+        "hmac-sha1-etm@openssh.com",
+        "hmac-sha2-256",
+        "hmac-sha2-256-96",
+        "hmac-sha2-256-etm@openssh.com",
+        "hmac-sha2-512",
+        "hmac-sha2-512-96",
+        "hmac-sha2-512-etm@openssh.com"
+      ],
+      "type": "string"
+    },
+    "Record<\"remove\"|\"append\"|\"prepend\",MacAlgorithm|MacAlgorithm[]>": {
+      "type": "object",
+      "properties": {
+        "remove": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/MacAlgorithm" }
+            },
+            {
+              "enum": [
+                "hmac-md5",
+                "hmac-md5-96",
+                "hmac-ripemd160",
+                "hmac-sha1",
+                "hmac-sha1-96",
+                "hmac-sha1-etm@openssh.com",
+                "hmac-sha2-256",
+                "hmac-sha2-256-96",
+                "hmac-sha2-256-etm@openssh.com",
+                "hmac-sha2-512",
+                "hmac-sha2-512-96",
+                "hmac-sha2-512-etm@openssh.com"
+              ],
+              "type": "string"
+            }
+          ]
+        },
+        "append": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/MacAlgorithm" }
+            },
+            {
+              "enum": [
+                "hmac-md5",
+                "hmac-md5-96",
+                "hmac-ripemd160",
+                "hmac-sha1",
+                "hmac-sha1-96",
+                "hmac-sha1-etm@openssh.com",
+                "hmac-sha2-256",
+                "hmac-sha2-256-96",
+                "hmac-sha2-256-etm@openssh.com",
+                "hmac-sha2-512",
+                "hmac-sha2-512-96",
+                "hmac-sha2-512-etm@openssh.com"
+              ],
+              "type": "string"
+            }
+          ]
+        },
+        "prepend": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/MacAlgorithm" }
+            },
+            {
+              "enum": [
+                "hmac-md5",
+                "hmac-md5-96",
+                "hmac-ripemd160",
+                "hmac-sha1",
+                "hmac-sha1-96",
+                "hmac-sha1-etm@openssh.com",
+                "hmac-sha2-256",
+                "hmac-sha2-256-96",
+                "hmac-sha2-256-etm@openssh.com",
+                "hmac-sha2-512",
+                "hmac-sha2-512-96",
+                "hmac-sha2-512-etm@openssh.com"
+              ],
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": ["append", "prepend", "remove"]
+    },
+    "CompressionAlgorithm": {
+      "enum": ["none", "zlib", "zlib@openssh.com"],
+      "type": "string"
+    },
+    "Record<\"remove\"|\"append\"|\"prepend\",CompressionAlgorithm|CompressionAlgorithm[]>": {
+      "type": "object",
+      "properties": {
+        "remove": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/CompressionAlgorithm" }
+            },
+            { "enum": ["none", "zlib", "zlib@openssh.com"], "type": "string" }
+          ]
+        },
+        "append": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/CompressionAlgorithm" }
+            },
+            { "enum": ["none", "zlib", "zlib@openssh.com"], "type": "string" }
+          ]
+        },
+        "prepend": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/CompressionAlgorithm" }
+            },
+            { "enum": ["none", "zlib", "zlib@openssh.com"], "type": "string" }
+          ]
+        }
+      },
+      "required": ["append", "prepend", "remove"]
+    },
+    "AuthenticationType": {
+      "enum": [
+        "agent",
+        "hostbased",
+        "keyboard-interactive",
+        "none",
+        "password",
+        "publickey"
+      ],
+      "type": "string"
+    },
+    "AuthMethod": {
+      "type": "object",
+      "properties": {
+        "type": { "$ref": "#/definitions/AuthenticationType" },
+        "username": { "type": "string" }
+      },
+      "required": ["type", "username"]
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
