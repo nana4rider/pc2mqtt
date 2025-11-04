@@ -28,11 +28,10 @@ async function getShutdownCommand(
 
 export default async function shutdown(config: RemoteConfig): Promise<void> {
   const sshClient = new NodeSSH();
-  const host = config.ipAddress;
 
   try {
     await sshClient.connect({
-      host,
+      host: config.ipAddress,
       readyTimeout: DEFAULT_TIMEOUT,
       ...config.ssh,
     });
