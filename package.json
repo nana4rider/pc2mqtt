@@ -1,6 +1,6 @@
 {
   "name": "pc2mqtt",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "author": "nana4rider",
   "license": "ISC",
   "main": "dist/index.js",
@@ -14,7 +14,8 @@
     "lint": "eslint --max-warnings 0 && prettier . --check",
     "lint:fix": "eslint --fix && prettier . --write",
     "test": "vitest run",
-    "prepare": "husky"
+    "prepare": "husky",
+    "generate-config-schema": "tsx --env-file=.env generate-config-schema.ts"
   },
   "lint-staged": {
     "*.ts": [
@@ -52,6 +53,7 @@
     "type-fest": "^5.0.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.45.0",
+    "typescript-json-schema": "^0.65.1",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
   }

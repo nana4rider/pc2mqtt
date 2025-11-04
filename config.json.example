@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/nana4rider/pc2mqtt/refs/heads/main/config-schema.json",
   "deviceId": "string",
   "entities": [
     {

@@ -7,7 +7,10 @@ export type Entity = {
 };
 
 export type RemoteConfig = {
-  ssh: SSHConfig;
+  ssh: Pick<
+    SSHConfig,
+    "username" | "password" | "privateKey" | "privateKeyPath" | "port"
+  >;
   macAddress: string;
   ipAddress: string;
   subnetMask?: string;
