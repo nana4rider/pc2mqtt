@@ -1,7 +1,6 @@
 import type { RemoteConfig } from "@/entity";
 import logger from "@/logger";
 import { NodeSSH } from "node-ssh";
-import path from "path";
 
 const DEFAULT_TIMEOUT = 3000;
 
@@ -29,19 +28,12 @@ async function getShutdownCommand(
 
 export default async function shutdown(config: RemoteConfig): Promise<void> {
   const sshClient = new NodeSSH();
-
-  const homeDir = process.env.HOME ?? process.env.HOMEPATH;
   const host = config.ipAddress;
-  const privateKeyPath =
-    homeDir && !config.ssh.password && !config.ssh.privateKeyPath
-      ? path.join(homeDir, ".ssh", "id_ed25519")
-      : undefined;
 
   try {
     await sshClient.connect({
       host,
       readyTimeout: DEFAULT_TIMEOUT,
-      privateKeyPath,
       ...config.ssh,
     });
     const ShutdownCommand = await getShutdownCommand(sshClient);

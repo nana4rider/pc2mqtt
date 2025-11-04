@@ -1,6 +1,5 @@
 import type { RemoteConfig } from "@/entity";
 import shutdown from "@/service/shutdown";
-import path from "path";
 
 const mockConnect = vi.fn();
 const mockExecCommand = vi.fn();
@@ -16,59 +15,23 @@ vi.mock("node-ssh", () => ({
 }));
 
 describe("getShutdownCommand", () => {
-  const env = process.env;
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env = { ...env };
   });
 
-  test("Windows id_ed25519", async () => {
-    const homePath = "path/to/home";
-    delete process.env.HOME;
-    process.env.HOMEPATH = homePath;
-
-    await shutdown({
-      ipAddress: "192.168.1.1",
-      ssh: {},
-    } as RemoteConfig);
-
-    expect(mockConnect).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({
-        privateKeyPath: path.join(homePath, ".ssh", "id_ed25519"),
-      }),
-    );
-  });
-
-  test("Linux id_ed25519", async () => {
-    const homePath = "path/to/home";
-    process.env.HOME = homePath;
-    delete process.env.HOMEPATH;
-
-    await shutdown({
-      ipAddress: "192.168.1.1",
-      ssh: {},
-    } as RemoteConfig);
-
-    expect(mockConnect).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({
-        privateKeyPath: path.join(homePath, ".ssh", "id_ed25519"),
-      }),
-    );
-  });
-
-  test("パスワードが設定されている時はprivateKeyPathを補完しない", async () => {
-    process.env.HOME = "path/to/home";
-
+  test("SSH接続設定が正しく適用される", async () => {
     await shutdown({
       ipAddress: "192.168.1.1",
       ssh: {
-        password: "password",
+        privateKeyPath: "/path/to/key",
       },
     } as RemoteConfig);
 
     expect(mockConnect).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
-        privateKeyPath: undefined,
+        host: "192.168.1.1",
+        readyTimeout: expect.any(Number) as number,
+        privateKeyPath: "/path/to/key",
       }),
     );
   });
