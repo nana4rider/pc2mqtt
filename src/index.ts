@@ -1,4 +1,5 @@
 import type { Entity } from "@/entity";
+import env from "@/env";
 import logger from "@/logger";
 import { setupAvailability } from "@/manager/availabilityManager";
 import setupMqttDeviceManager from "@/manager/mqttDeviceManager";
@@ -15,7 +16,7 @@ async function main() {
   logger.info("start");
 
   const { deviceId, entities } = JSON.parse(
-    await fs.readFile("./config.json", "utf-8"),
+    await fs.readFile(env.DEVICE_CONFIG_PATH, "utf-8"),
   ) as DeviceConfig;
   const alives = new Map(
     await Promise.all(

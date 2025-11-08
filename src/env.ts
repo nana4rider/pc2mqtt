@@ -23,6 +23,10 @@ const env = cleanEnv(process.env, {
     default: 1,
   }),
   LOG_LEVEL: str({ desc: "ログレベル", default: "info" }),
+  DEVICE_CONFIG_PATH: str({
+    desc: "デバイス設定ファイルのパス",
+    default: "./config.json",
+  }),
   HA_DISCOVERY_PREFIX: str({
     desc: "https://www.home-assistant.io/integrations/mqtt/#discovery-options",
     default: "homeassistant",
