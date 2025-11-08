@@ -140,7 +140,7 @@ jobs:
         run: |
           gh pr create --base main \
                        --head "${{ steps.commit-and-push.outputs.branch_name }}" \
-                       --title "Update e2m-hass-brige to ${{ steps.get-version.outputs.app_version }}" \
+                       --title "Update pc2mqtt to ${{ steps.get-version.outputs.app_version }}" \
                        --body "This pull request updates the pc2mqtt add-on to version [${{ steps.get-version.outputs.app_version }}](https://github.com/nana4rider/pc2mqtt/releases/tag/${{ steps.get-version.outputs.app_version }})"
         env:
           GITHUB_TOKEN: ${{ secrets.PR_TOKEN }}
