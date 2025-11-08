@@ -6,15 +6,19 @@
 
 ## 概要
 
-パソコンを[Home Assistant](https://www.home-assistant.io/)のスイッチデバイスとして自動検出させるためのアプリケーションです。
+PCを[Home Assistant](https://www.home-assistant.io/)のスイッチデバイスとして自動検出させるためのアプリケーションです。
 
-完全に動作するためには、下記を確認する必要があります。
+完全に動作するためには、下記の高度な設定が必要になります。
 
 - PCにpingが飛ばせること
 - Wake-on-LANでPCが起動すること
 - 指定した秘密鍵を使いPCにsshでログインすることができ、かつサスペンドコマンドを実行できること
 
 ## 使い方
+
+### Add-ons
+
+[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fnana4rider%2Fhome-assistant-addons)
 
 ### 設定ファイルの作成
 
