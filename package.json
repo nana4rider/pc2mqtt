@@ -1,6 +1,6 @@
 {
   "name": "pc2mqtt",
-  "version": "1.9.2",
+  "version": "1.10.0",
   "author": "nana4rider",
   "license": "ISC",
   "main": "dist/index.js",
@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "envalid": "^8.1.1",
-    "fastify": "^5.6.1",
     "ip": "^2.0.1",
     "mqtt": "^5.14.1",
     "node-ssh": "^13.2.1",
