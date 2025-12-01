@@ -60,7 +60,7 @@ docker run -d \
   --env-file .env \
   --restart always \
   --net=host \
-  nana4rider/pc2mqtt:latest
+  ghcr.io/nana4rider/pc2mqtt:latest
 ```
 
 > [!TIP]  
