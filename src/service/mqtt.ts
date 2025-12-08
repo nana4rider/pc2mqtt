@@ -42,6 +42,10 @@ export default async function initializeMqttClient(
 
   logger.info("[MQTT] connected");
 
+  client.on("error", (error) => {
+    logger.error(`[MQTT] error: ${error.message}`);
+  });
+
   await client.subscribeAsync(subscribeTopics);
 
   for (const topic of subscribeTopics) {
