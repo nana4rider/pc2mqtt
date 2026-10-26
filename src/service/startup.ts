@@ -1,31 +1,35 @@
 import type { RemoteConfig } from "@/entity";
-import ip from "ip";
+import { Address4 } from "ip-address";
 import wol from "wol";
 
 function getDefaultSubnetMask(ipAddress: string) {
-  if (!ip.isV4Format(ipAddress)) {
+  if (!Address4.isValid(ipAddress)) {
     throw new Error(`'${ipAddress}' is not in IPv4 format.`);
   }
 
-  const [firstOctet] = ip.toBuffer(ipAddress);
+  const [firstOctet] = new Address4(ipAddress).toArray();
 
   let prefixLength: number;
-  if (firstOctet >= 0 && firstOctet <= 127) {
+  if (firstOctet <= 127) {
     prefixLength = 8; // Class A
-  } else if (firstOctet >= 128 && firstOctet <= 191) {
+  } else if (firstOctet <= 191) {
     prefixLength = 16; // Class B
-  } else if (firstOctet >= 192 && firstOctet <= 223) {
+  } else if (firstOctet <= 223) {
     prefixLength = 24; // Class C
   } else {
     throw new Error(`'${ipAddress}' does not belong to Class A, B, or C.`);
   }
 
-  return ip.fromPrefixLen(prefixLength);
+  return new Address4(`0.0.0.0/${prefixLength}`)
+    .subnetMaskAddress()
+    .correctForm();
 }
 
 export default async function startup(config: RemoteConfig) {
   const subnetMask =
     config.subnetMask ?? getDefaultSubnetMask(config.ipAddress);
-  const address = ip.subnet(config.ipAddress, subnetMask).broadcastAddress;
+  const address = Address4.fromAddressAndMask(config.ipAddress, subnetMask)
+    .endAddress()
+    .correctForm();
   await wol.wake(config.macAddress, { address });
 }
