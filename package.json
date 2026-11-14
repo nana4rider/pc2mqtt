@@ -1,6 +1,6 @@
 {
   "name": "pc2mqtt",
-  "version": "1.11.2",
+  "version": "1.11.3",
   "author": "nana4rider",
   "license": "ISC",
   "main": "dist/index.js",
@@ -29,7 +29,7 @@
   "devDependencies": {
     "@esbuild-plugins/tsconfig-paths": "^0.1.2",
     "@eslint/js": "^10.0.1",
-    "@types/node": "^24.19.2",
+    "@types/node": "^26.0.0",
     "@types/ssh2": "^1.15.6",
     "@types/wol": "^1.0.4",
     "@vitest/coverage-v8": "^5.0.5",
@@ -44,5 +44,11 @@
     "typescript-eslint": "^8.72.0",
     "typescript-json-schema": "^0.68.0",
     "vitest": "^5.0.5"
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "lefthook": true,
+    "cpu-features": true,
+    "ssh2": true
   }
 }
